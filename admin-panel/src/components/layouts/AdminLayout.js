@@ -24,6 +24,7 @@ import {
     Settings as SettingsIcon,
     Logout as LogoutIcon,
     SmartToy as AgentIcon,
+    Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
@@ -65,6 +66,7 @@ export default function AdminLayout({ children }) {
         { label: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
         { label: 'Agents', icon: <AgentIcon />, path: '/admin/agents' },
         { label: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+        { label: 'Audit Log', icon: <ReceiptIcon />, path: '/admin/audit-log' },
     ];
 
     const isActive = (path) => location.pathname === path;

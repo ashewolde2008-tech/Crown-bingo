@@ -13,6 +13,7 @@ import UserManagement from './components/pages/UserManagement';
 import AgentManagement from './components/pages/AgentManagement';
 import SettingsPage from './components/pages/Settings';
 import AdminLogin from './components/pages/AdminLogin';
+import AuditLogView from './components/pages/AuditLogView';
 import LoadingScreen from './components/fragments/LoadingScreen';
 
 const theme = createTheme({
@@ -95,6 +96,7 @@ function App() {
                                         <Route path="/users" element={<UserManagement />} />
                                         <Route path="/agents" element={<AgentManagement />} />
                                         <Route path="/settings" element={<SettingsPage />} />
+                                        <Route path="/audit-log" element={<AuditLogView />} />
                                     </Routes>
                                 </AdminLayout>
                             ) : (
