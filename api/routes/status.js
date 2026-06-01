@@ -40,6 +40,17 @@ router.patch('/:uid/status', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGE
 
     res.json({ success: true, data: { uid, ...updateData } });
   } catch (err) {
+    const action = disabled ? 'USER_DISABLED' : 'USER_ENABLED';
+    await writeAuditLog({
+      action,
+      actor: { uid: req.user.uid, email: req.user.email, role: req.user.role },
+      target: { uid, email: '' },
+      details: { reason: req.body.reason || '' },
+      result: 'FAILURE',
+      error: err.message,
+      ip: req.ip,
+      source: 'api'
+    }).catch(() => {});
     res.status(500).json({ success: false, error: 'SERVER_ERROR', message: err.message });
   }
 });
