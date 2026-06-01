@@ -13,7 +13,6 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { setAdminCredentials } from '../../authStore';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
@@ -32,7 +31,6 @@ export default function AdminLogin() {
             const token = await userCredential.user.getIdTokenResult();
 
             if (token.claims.role === 'SUPER_ADMIN') {
-                setAdminCredentials(email, password);
                 toast.success('Login successful!');
                 navigate('/admin');
             } else {

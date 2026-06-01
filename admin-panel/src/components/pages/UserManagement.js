@@ -29,12 +29,11 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import { collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { db, auth, crownbingoAuth } from '../../firebase';
+import { db } from '../../firebase';
 import { toast } from 'react-toastify';
-import { getAdminCredentials } from '../../authStore';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { apiPost } from '../../services/api';
 
 const getValidationSchema = (isEditing) => yup.object({
     username: yup.string('Enter username').required('Username is required'),
@@ -71,17 +70,13 @@ export default function UserManagement() {
                     toast.success('User updated successfully');
                 } else {
                     const { password, ...userData } = values;
-                    const userCred = await createUserWithEmailAndPassword(crownbingoAuth, values.email, password);
-                    const adminCreds = getAdminCredentials();
-                    if (adminCreds) {
-                        await crownbingoAuth.signOut();
-                        await signInWithEmailAndPassword(auth, adminCreds.email, adminCreds.password);
-                    }
-                    await setDoc(doc(db, 'users', userCred.user.uid), {
-                        uid: userCred.user.uid,
-                        ...userData,
-                        createdAt: new Date(),
-                        isActive: true,
+                    await apiPost('/api/users', {
+                        email: values.email,
+                        password: values.password,
+                        username: values.username,
+                        phone: values.phone || '',
+                        initialBalance: Number(values.balance) || 0,
+                        role: 'user'
                     });
                     toast.success('User created successfully');
                 }

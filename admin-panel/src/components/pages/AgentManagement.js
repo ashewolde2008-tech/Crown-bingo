@@ -29,12 +29,11 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import { collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { db, auth, crownbingoAuth } from '../../firebase';
-import { getAdminCredentials } from '../../authStore';
+import { db } from '../../firebase';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { apiPost } from '../../services/api';
 
 const getValidationSchema = (isEditing) => yup.object({
     agentName: yup.string('Enter agent name').required('Agent name is required'),
@@ -73,19 +72,15 @@ export default function AgentManagement() {
                     toast.success('Agent updated successfully');
                 } else {
                     const { password, ...agentData } = values;
-                    const userCred = await createUserWithEmailAndPassword(crownbingoAuth, values.email, password);
-                    const adminCreds = getAdminCredentials();
-                    if (adminCreds) {
-                        await crownbingoAuth.signOut();
-                        await signInWithEmailAndPassword(auth, adminCreds.email, adminCreds.password);
-                    }
-                    await setDoc(doc(db, 'agents', userCred.user.uid), {
-                        uid: userCred.user.uid,
-                        ...agentData,
-                        createdAt: new Date(),
-                        isActive: true,
-                        totalSales: 0,
-                        totalEarnings: 0,
+                    await apiPost('/api/users', {
+                        email: values.email,
+                        password: values.password,
+                        username: values.agentName,
+                        phone: values.phone || '',
+                        initialBalance: 0,
+                        role: 'agent',
+                        agentCode: values.agentCode,
+                        commissionRate: Number(values.commissionRate) || 5
                     });
                     toast.success('Agent created successfully');
                 }
