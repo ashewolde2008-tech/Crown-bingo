@@ -1,0 +1,42 @@
+.video-bg-container {
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    width: 100%
+}
+
+.video-bg {
+    object-fit: cover
+}
+
+.overlay,
+.video-bg {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1
+}
+
+.overlay {
+    background: #00000080
+}
+
+.glow-text {
+    animation: pulsingGlow 2s ease-in-out infinite;
+    color: #623f89;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center
+}
+
+@keyframes pulsingGlow {
+    0%, to {
+        text-shadow: 0 0 10px #bb86fc, 0 0 20px #bb86fc, 0 0 30px #bb86fc, 0 0 40px #bb86fc
+    }
+    50% {
+        text-shadow: 0 0 20px #bb86fc, 0 0 40px #bb86fc, 0 0 60px #bb86fc, 0 0 80px #bb86fc
+    }
+}

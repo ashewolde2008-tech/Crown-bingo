@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserRole() == 'SUPER_ADMIN';
+    }
+
+    function isSuperAgent() {
+      return isAuthenticated() && getUserRole() == 'SUPER_AGENT';
+    }
+
+    function isUser() {
+      return isAuthenticated() && getUserRole() == 'USER';
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // SUPER_ADMIN: full access to all user documents
+      // SUPER_AGENT: read/create users they manage
+      // Any authenticated user: read/update own document (by Auth UID as doc ID)
+      allow read: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && isOwner(userId));
+      allow create: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && request.resource.data.uid == request.auth.uid);
+      allow update: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && isOwner(userId));
+      allow delete: if isSuperAdmin();
+    }
+
+    // Agents collection
+    match /agents/{agentId} {
+      // SUPER_ADMIN: full access
+      // SUPER_AGENT: read/update
+      allow read: if isSuperAdmin() || isSuperAgent();
+      allow create: if isSuperAdmin();
+      allow update: if isSuperAdmin() || isSuperAgent();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Transactions collection
+    match /transactions/{txnId} {
+      // SUPER_ADMIN: full access
+      // SUPER_AGENT: read/create transactions
+      // USER: read own transactions
+      allow read: if isSuperAdmin() || isSuperAgent() || (isUser() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Games collection
+    match /games/{gameId} {
+      // SUPER_ADMIN: full access
+      // SUPER_AGENT: read games they manage
+      // USER: read own games
+      allow read: if isSuperAdmin() || isSuperAgent() || (isUser() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Bets collection
+    match /bets/{betId} {
+      // SUPER_ADMIN: full access
+      // SUPER_AGENT: read bets
+      // USER: create own bets, read own bets
+      allow read: if isSuperAdmin() || isSuperAgent() || (isUser() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Settings collection
+    match /settings/{settingId} {
+      // Only SUPER_ADMIN can manage settings
+      allow read: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // Audit logs collection
+    match /audit_logs/{logId} {
+      // Only SUPER_ADMIN can read audit logs
+      // Service accounts or SUPER_ADMIN can write
+      allow read: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

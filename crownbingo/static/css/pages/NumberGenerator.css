@@ -1,0 +1,55 @@
+/* Dark background with gradient */
+
+.dark-theme-bg {
+    background: linear-gradient(135deg, #1a1a1d, #282a36);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: white;
+}
+
+/* Glowing label text */
+
+.label {
+    color: #17c190;
+    font-weight: bold;
+    text-shadow: 0 0 5px #17c190, 0 0 10px #17c190, 0 0 15px #17c190;
+}
+
+/* Glowing title text animation */
+
+.glow-text {
+    color: #623f89;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 3rem;
+    animation: pulsingGlow 2s ease-in-out infinite;
+}
+
+/* Glowing animation keyframes */
+
+@keyframes pulsingGlow {
+    0%,
+    100% {
+        text-shadow: 0 0 10px #bb86fc, 0 0 20px #bb86fc, 0 0 30px #bb86fc, 0 0 40px #bb86fc;
+    }
+    50% {
+        text-shadow: 0 0 20px #bb86fc, 0 0 40px #bb86fc, 0 0 60px #bb86fc, 0 0 80px #bb86fc;
+    }
+}
+
+/* Numbers container */
+
+.numbers-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 20px;
+    overflow-y: auto;
+    max-height: 60vh;
+    width: 100%;
+    padding-bottom: 30px;
+}

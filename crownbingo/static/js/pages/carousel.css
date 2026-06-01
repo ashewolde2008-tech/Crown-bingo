@@ -1,0 +1,36 @@
+.carousel-container {
+    overflow: hidden;
+    position: relative;
+    width: 100%
+}
+
+.carousel-wrapper {
+    display: flex;
+    height: 100%;
+    width: 100%
+}
+
+.carousel-container img {
+    flex: 0 0 100%;
+    object-fit: cover
+}
+
+.carousel-container button {
+    background-color: #00000080;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    font-size: 24px;
+    position: absolute;
+    transform: translateY(-50%);
+    z-index: 100
+}
+
+.carousel-container button.left {
+    left: 10px
+}
+
+.carousel-container button.right {
+    right: 10px
+}
