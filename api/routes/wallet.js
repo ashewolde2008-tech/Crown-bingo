@@ -8,6 +8,10 @@ router.post('/recharge', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGENT')
   const { userId, amount, description } = req.body;
   const db = admin.firestore();
 
+  if (!userId || !amount || amount <= 0) {
+    return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', message: 'userId and amount (>0) are required' });
+  }
+
   try {
     const result = await db.runTransaction(async (transaction) => {
       const userRef = db.collection('users').doc(userId);
@@ -58,7 +62,7 @@ router.post('/recharge', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGENT')
       ip: req.ip,
       source: 'api'
     }).catch(() => {});
-    res.status(400).json({ success: false, error: 'RECHARGE_FAILED', message: err.message });
+    res.status(400).json({ success: false, error: 'RECHARGE_FAILED', message: 'Wallet recharge failed' });
   }
 });
 

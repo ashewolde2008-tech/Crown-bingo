@@ -9,6 +9,10 @@ router.patch('/:uid/status', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGE
   const { disabled, reason } = req.body;
   const db = admin.firestore();
 
+  if (typeof disabled !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', message: 'disabled must be a boolean' });
+  }
+
   try {
     const userRef = db.collection('users').doc(uid);
     const userSnap = await userRef.get();
@@ -51,7 +55,7 @@ router.patch('/:uid/status', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGE
       ip: req.ip,
       source: 'api'
     }).catch(() => {});
-    res.status(500).json({ success: false, error: 'SERVER_ERROR', message: err.message });
+    res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Status update failed' });
   }
 });
 

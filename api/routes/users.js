@@ -7,6 +7,10 @@ const { authenticate, requireRole } = require('../middleware/auth');
 router.post('/', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGENT'), async (req, res) => {
   const { email, password, username, phone, initialBalance, role } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', message: 'Email and password are required' });
+  }
+
   try {
     const userRecord = await admin.auth().createUser({ email, password });
     const db = admin.firestore();
@@ -52,7 +56,7 @@ router.post('/', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGENT'), async 
       ip: req.ip,
       source: 'api'
     }).catch(() => {});
-    res.status(500).json({ success: false, error: err.code || 'SERVER_ERROR', message: err.message });
+    res.status(500).json({ success: false, error: err.code || 'SERVER_ERROR', message: 'User creation failed' });
   }
 });
 

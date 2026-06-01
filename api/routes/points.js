@@ -8,6 +8,16 @@ router.post('/transfer', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGENT')
   const { userId, amount, percent } = req.body;
   const db = admin.firestore();
 
+  if (!userId || !amount || amount <= 0 || !percent || percent <= 0) {
+    return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', message: 'userId, amount (>0), and percent (>0) are required' });
+  }
+
+  const numericAmount = Number(amount);
+  const numericPercent = Number(percent);
+  if (isNaN(numericAmount) || isNaN(numericPercent) || numericAmount <= 0 || numericPercent <= 0) {
+    return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', message: 'Amount and percent must be valid positive numbers' });
+  }
+
   try {
     const result = await db.runTransaction(async (transaction) => {
       const adminRef = db.collection('points').doc(req.user.uid);
@@ -62,7 +72,7 @@ router.post('/transfer', authenticate, requireRole('SUPER_ADMIN', 'SUPER_AGENT')
       ip: req.ip,
       source: 'api'
     }).catch(() => {});
-    res.status(400).json({ success: false, error: 'TRANSFER_FAILED', message: err.message });
+    res.status(400).json({ success: false, error: 'TRANSFER_FAILED', message: 'Point transfer failed' });
   }
 });
 
