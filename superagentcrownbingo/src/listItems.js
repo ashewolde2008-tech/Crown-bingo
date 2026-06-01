@@ -9,9 +9,15 @@ import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import LayersIcon from '@mui/icons-material/Layers';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import LogoutIcon from '@mui/icons-material/Logout';
 import {
-    Link
+    Link,
+    useNavigate
 } from 'react-router-dom';
+import {
+    signOut,
+    getAuth
+} from 'firebase/auth';
 
 
 export const mainListItems = ( <
@@ -74,28 +80,25 @@ export const mainListItems = ( <
     /React.Fragment>
 );
 
-// export const secondaryListItems = (
-//   <React.Fragment>
-//     <ListSubheader component="div" inset>
-//       Saved reports
-//     </ListSubheader>
-//     <ListItemButton>
-//       <ListItemIcon>
-//         <AssignmentIcon />
-//       </ListItemIcon>
-//       <ListItemText primary="Current month" />
-//     </ListItemButton>
-//     <ListItemButton>
-//       <ListItemIcon>
-//         <AssignmentIcon />
-//       </ListItemIcon>
-//       <ListItemText primary="Last quarter" />
-//     </ListItemButton>
-//     <ListItemButton>
-//       <ListItemIcon>
-//         <AssignmentIcon />
-//       </ListItemIcon>
-//       <ListItemText primary="Year-end sale" />
-//     </ListItemButton>
-//   </React.Fragment>
-// );
+export function LogoutListItem() {
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await signOut(getAuth());
+            localStorage.clear();
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
+
+    return (
+        <ListItemButton onClick={handleLogout}>
+            <ListItemIcon>
+                <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+        </ListItemButton>
+    );
+}

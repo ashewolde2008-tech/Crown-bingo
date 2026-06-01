@@ -13,10 +13,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import {
     getFirestore,
     collection,
-    doc,
-    updateDoc,
-    setDoc,
-    addDoc,
     query,
     where,
     getDocs
@@ -24,6 +20,9 @@ import {
 import {
     toast
 } from 'react-toastify';
+import {
+    apiPost
+} from '../../api';
 
 export default function EditDialog({
     open,
@@ -113,69 +112,21 @@ export default function EditDialog({
             return;
         }
 
-        setLoading(true);
+            setLoading(true);
 
         try {
-            const updatedUserPoints = remainingPoints + (newPoints * 100) / percent;
-            const updatedAdminPoints = adminPoints - (newPoints * 100) / percent;
-
-            if (updatedAdminPoints < 0) {
-                toast.error('Insufficient points for admin to give');
-                setLoading(false);
-                return;
-            }
-
-            const db = getFirestore();
-            const adminPointsDocRef = doc(db, 'points', adminId);
-            const userPointsDocRef = doc(db, 'points', pointsData.uid);
-
-            // Step 1: Deduct points from admin
-            await updateDoc(adminPointsDocRef, {
-                points: updatedAdminPoints
+            await apiPost('/api/points/transfer', {
+                toUserId: pointsData.uid,
+                amount: newPoints,
+                percent: percent
             });
-            console.log('Admin points deducted successfully');
 
-            // Step 2: Try to update user points
-            try {
-                await setDoc(userPointsDocRef, {
-                    points: updatedUserPoints,
-                    percent: percent,
-                    uid: pointsData.uid,
-                    casher_percent: 20
-                }, {
-                    merge: true
-                });
-                console.log('User points updated successfully');
-
-                // Step 3: Add to history if user points update is successful
-                const historyDocRef = collection(db, 'history');
-                await addDoc(historyDocRef, {
-                    userId: pointsData.uid,
-                    adminId: adminId,
-                    userName: userName,
-                    pointsAdded: newPoints,
-                    percent: percent,
-                    date: new Date().toISOString()
-                });
-                console.log('History saved successfully');
-
-                // Reflect changes in the UI
-                handleSave(updatedUserPoints);
-                setRemainingPoints(Math.floor(updatedUserPoints));
-                setAdminPoints(updatedAdminPoints);
-                toast.success('Points Updated Successfully');
-                handleClose();
-            } catch (userUpdateError) {
-                // Rollback admin points if user points update fails
-                console.error('Failed to update user points. Rolling back admin points:', userUpdateError);
-                await updateDoc(adminPointsDocRef, {
-                    points: adminPoints
-                });
-                toast.error('Failed to update user points. No points deducted from admin.');
-            }
+            handleSave();
+            toast.success('Points Updated Successfully');
+            handleClose();
         } catch (error) {
             console.error('Error updating points:', error);
-            toast.error('Something went wrong. Points were not updated.');
+            toast.error(error.message || 'Something went wrong. Points were not updated.');
         } finally {
             setLoading(false);
         }

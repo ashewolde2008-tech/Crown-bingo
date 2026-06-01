@@ -11,27 +11,12 @@ import {
     Alert,
 } from '@mui/material';
 import {
-    getFirestore,
     doc,
     setDoc
 } from 'firebase/firestore';
 import {
-    initializeApp
-} from 'firebase/app';
-
-const firebaseConfig = {
-    // Add your Firebase configuration here
-    apiKey: "AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o",
-    authDomain: "bingo-27d37.firebaseapp.com",
-    projectId: "bingo-27d37-5661f",
-    storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-    messagingSenderId: "509582453061",
-    appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-    measurementId: "G-VTLQ243Q66"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    db
+} from '../../firebase';
 
 const SetBetSettings = () => {
     const [minBet, setMinBet] = useState('');

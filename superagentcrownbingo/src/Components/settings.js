@@ -25,7 +25,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import {
-    mainListItems
+    mainListItems,
+    LogoutListItem
 } from '../listItems';
 import Deposits from './fragments/Cards';
 import AddIcon from '@mui/icons-material/Add';
@@ -251,6 +252,8 @@ export default function Settings() {
             }
         }
         /> <
+        LogoutListItem / >
+        <
         /List> <
         /Drawer> <
         Box component = "main"

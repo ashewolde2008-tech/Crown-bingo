@@ -291,44 +291,9 @@ export default function CustomizedTables() {
             console.error('Error updating phone number:', error);
         }
     };
-    const handleEditPoints = async (newPointsData) => {
-        try {
-            const db = getFirestore();
-            const userPointsQuery = query(collection(db, 'points'), where('uid', '==', selectedUser.uid));
-            const userPointsSnapshot = await getDocs(userPointsQuery);
-
-            let remainingPoints = 0;
-            let addedPoints = newPointsData; // Initialize addedPoints with newPointsData
-
-            if (!userPointsSnapshot.empty) {
-                const userPointsDocRef = userPointsSnapshot.docs[0].ref;
-                const userPointsData = userPointsSnapshot.docs[0].data();
-                remainingPoints = userPointsData.points; // Set remaining points before updating
-                addedPoints -= remainingPoints; // Calculate added points
-                await updateDoc(userPointsDocRef, {
-                    points: newPointsData
-                });
-            } else {
-                const newUserPointsDocRef = doc(db, 'points', selectedUser.uid);
-                await setDoc(newUserPointsDocRef, {
-                    points: newPointsData
-                });
-            }
-
-            const historyDocRef = doc(db, 'histories', `${selectedUser.userName}_${Date.now()}`);
-            await setDoc(historyDocRef, {
-                Username: selectedUser.userName,
-                Points_Transferred: newPointsData - pointsData.points, // Save added points
-                Remaining_Points: remainingPoints, // Save remaining points
-                Date: new Date().toISOString()
-            });
-
-            console.log('Points updated successfully');
-            setOpenDialog(false); // Close the dialog after updating
-            setRefresh(prev => !prev); // Trigger data refresh
-        } catch (error) {
-            console.error('Error updating points:', error);
-        }
+    const handleEditPoints = () => {
+        setOpenDialog(false);
+        setRefresh(prev => !prev);
     };
 
     const handleUserDetailsClick = (uid, name) => {

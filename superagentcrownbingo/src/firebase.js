@@ -9,13 +9,10 @@ import {
 import {
     getFirestore
 } from 'firebase/firestore';
+import {
+    getAuth
+} from 'firebase/auth';
 
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o",
     authDomain: "bingo-27d37.firebaseapp.com",
@@ -26,10 +23,11 @@ const firebaseConfig = {
     measurementId: "G-VTLQ243Q66"
 };
 
-// Initialize Firebase only if it hasn't been initialized yet
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 export {
-    db
+    db,
+    auth
 };

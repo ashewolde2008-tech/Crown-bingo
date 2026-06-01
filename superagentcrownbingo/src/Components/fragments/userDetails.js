@@ -25,7 +25,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import {
-    mainListItems
+    mainListItems,
+    LogoutListItem
 } from '../../listItems';
 import AddIcon from '@mui/icons-material/Add';
 import AddDialog from './AddUserDialog';
@@ -226,6 +227,8 @@ export default function Dashboard() {
             }
         }
         /> <
+        LogoutListItem / >
+        <
         /List> <
         /Drawer> <
         Box component = "main"

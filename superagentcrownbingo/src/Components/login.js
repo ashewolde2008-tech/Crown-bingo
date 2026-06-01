@@ -7,12 +7,6 @@ import {
     Button
 } from '@mui/material';
 import {
-    initializeApp
-} from "firebase/app";
-import {
-    getAnalytics
-} from "firebase/analytics";
-import {
     getAuth,
     signInWithEmailAndPassword
 } from "firebase/auth";
@@ -25,29 +19,14 @@ import {
 } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import {
-    getFirestore,
     collection,
-    addDoc,
     query,
     where,
     getDocs
-} from 'firebase/firestore'; // Import necessary Firestore functions
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o",
-    authDomain: "bingo-27d37.firebaseapp.com",
-    projectId: "bingo-27d37-5661f",
-    storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-    messagingSenderId: "509582453061",
-    appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-    measurementId: "G-VTLQ243Q66"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+} from 'firebase/firestore';
+import {
+    db
+} from '../firebase';
 
 const LoginPage = () => {
     const navigate = useNavigate();

@@ -21,11 +21,11 @@ import {
     query,
     where,
     doc,
-    getDoc,
-    runTransaction,
-    addDoc,
-    updateDoc
+    getDoc
 } from 'firebase/firestore';
+import {
+    apiPost
+} from '../../api';
 import {
     useParams
 } from 'react-router-dom';
@@ -135,112 +135,37 @@ export default function UserDetailsPage() {
         fetchHistory();
     }, [uid]);
 
-    const handleAddPoints = async () => { 
-        if (percent <= 0) {  
-            toast.warn('Percent value must be greater than zero.');  
-            return; 
+    const handleAddPoints = async () => {
+        if (percent <= 0) {
+            toast.warn('Percent value must be greater than zero.');
+            return;
         }
 
-         
-        const db = getFirestore(); 
-        const adminId = localStorage.getItem('uid'); 
-        if (!adminId) {  
-            toast.error('Admin ID is not available in local storage. Please log in as an admin.');  
-            return; 
+        const adminId = localStorage.getItem('uid');
+        if (!adminId) {
+            toast.error('Admin ID is not available in local storage. Please log in as an admin.');
+            return;
         }
-        let expectedTotal; 
-        try {  
-            const requiredAdminPoints = (newPoints * 100) / percent;  
-            if (adminPoints < requiredAdminPoints) {   
-                toast.error('Insufficient points in admin account to complete this transfer.');   
-                return;  
-            }
 
-              
-            setLoading(true);
+        setLoading(true);
 
-              
-            await runTransaction(db, async (transaction) => {   
-                const userDocRef = doc(db, 'points', uid);   
-                const adminDocRef = doc(db, 'points', adminId);
-
-                   
-                const adminDoc = await transaction.get(adminDocRef);   
-                if (!adminDoc.exists()) {    
-                    throw new Error('Admin document does not exist');   
-                }
-
-                   
-                const currentAdminPoints = adminDoc.data().points || 0;   
-                if (currentAdminPoints < requiredAdminPoints) {    
-                    throw new Error('Admin does not have enough points for the transfer');   
-                }
-
-                   
-                let userDoc = await transaction.get(userDocRef);
-
-
-                   
-                const totalNewPoints = (userDoc.exists() ? userDoc.data().points : 0) + (newPoints * 100) / percent;   
-                transaction.set(userDocRef, {    
-                    points: totalNewPoints,
-                        percent: percent,
-                        uid: uid,
-                        casher_percent: 20,
-                       
-                });
-                expectedTotal = totalNewPoints;   
-                const updatedAdminPoints = currentAdminPoints - (newPoints * 100) / percent;   
-                transaction.update(adminDocRef, {
-                    points: updatedAdminPoints
-                });  
+        try {
+            await apiPost('/api/points/transfer', {
+                toUserId: uid,
+                amount: newPoints,
+                percent: percent
             });
 
-               // Verification step to ensure user points were updated
-              
-            const userDocRef = doc(db, 'points', uid);  
-            const userSnapshot = await getDoc(userDocRef);  
-            const finalUserPoints = userSnapshot.data().points;  
-            const expectedUserPoints = (newPoints * 100) / percent;
-            console.log(finalUserPoints);
-            console.log(expectedTotal);
+            const addedActual = (newPoints * 100) / percent;
+            setRemainingPoints(prev => prev + addedActual);
+            setAdminPoints(prev => prev - addedActual);
 
-              
-            if (finalUserPoints == expectedTotal) {   
-                toast.success('Points updated successfully');
-
-                   
-                const historyDocRef = collection(db, 'history');   
-                await addDoc(historyDocRef, {    
-                    userId: uid,
-                        adminId: adminId,
-                        userName: name || 'Unknown User',
-                        pointsAdded: newPoints,
-                        percent: percent,
-                        date: new Date().toISOString(),
-                       
-                });  
-            } else {    // Rollback admin points if verification fails
-                   
-                const adminDocRef = doc(db, 'points', adminId);   
-                await updateDoc(adminDocRef, {
-                    points: adminPoints
-                });   
-                toast.error('Error: Verification failed. Admin points have been rolled back.');  
-            } 
-        } catch (error) {  
-            if (error.message.includes('Admin does not have enough points')) {   
-                toast.error('Transfer failed: Insufficient admin points.');  
-            } else if (error.message.includes('network')) {   
-                toast.error('Network error: Please check your internet connection and try again.');  
-            } else if (error.message.includes('Admin document does not exist')) {   
-                toast.error('Admin account not found. Please verify admin details.');  
-            } else {   
-                console.error('Error updating points:', error);   
-                toast.error('An unexpected error occurred. Please try again.');  
-            } 
-        } finally {  
-            setLoading(false); 
+            toast.success('Points updated successfully');
+        } catch (error) {
+            console.error('Error updating points:', error);
+            toast.error(error.message || 'An unexpected error occurred. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 

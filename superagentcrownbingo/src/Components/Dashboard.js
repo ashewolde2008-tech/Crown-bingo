@@ -25,7 +25,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import {
-    mainListItems
+    mainListItems,
+    LogoutListItem
 } from '../listItems';
 import Deposits from '../Components/fragments/Cards';
 import AddIcon from '@mui/icons-material/Add';
@@ -322,6 +323,14 @@ export default function Dashboard() {
         List component = "nav" > {
             mainListItems
         } <
+        Divider sx = {
+            {
+                my: 1
+            }
+        }
+        /> <
+        LogoutListItem / >
+        <
         Divider sx = {
             {
                 my: 1
