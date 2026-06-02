@@ -2,10 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
 
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  projectId: process.env.FIREBASE_PROJECT_ID || 'bingo-27d37'
-});
+// --- Firebase Admin initialization ---
+// On Render: set FIREBASE_SERVICE_ACCOUNT_JSON env var (Base64 of serviceAccountKey.json)
+// Locally: falls back to serviceAccountKey.json file, then applicationDefault()
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  serviceAccount = JSON.parse(
+    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_JSON, 'base64').toString()
+  );
+} else {
+  try { serviceAccount = require('./serviceAccountKey.json'); } catch (e) { /* noop */ }
+}
+
+if (serviceAccount) {
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+} else {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    projectId: process.env.FIREBASE_PROJECT_ID || 'bingo-27d37'
+  });
+}
 
 const app = express();
 

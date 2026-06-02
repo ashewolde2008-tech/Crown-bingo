@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: crown-bingo-api
+    runtime: node
+    repo: https://github.com/ashewolde2008-tech/Crown-bingo
+    branch: main
+    rootDir: api
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health/live
+    envVars:
+      - key: NODE_VERSION
+        value: 18.20.2
+      - key: FIREBASE_PROJECT_ID
+        value: bingo-27d37
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
