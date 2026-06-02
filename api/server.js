@@ -14,11 +14,31 @@ const { createCorsMiddleware } = require('./middleware/cors');
 const { globalLimiter, apiLimiter } = require('./middleware/rateLimit');
 const { correlationId } = require('./middleware/correlationId');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { logRequest, logError } = require('./logger');
+const metrics = require('./metrics');
 
 app.use(createCorsMiddleware());
 app.use(express.json({ limit: '1mb' }));
 app.use(globalLimiter);
 app.use(correlationId);
+
+// --- Request logging + metrics ---
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const durationSeconds = duration / 1000;
+    const routePath = req.route ? req.route.path : req.path;
+    metrics.trackHttpDuration(req.method, routePath, res.statusCode, durationSeconds);
+    if (res.statusCode >= 400) {
+      metrics.incrementError(`HTTP_${res.statusCode}`);
+      logError(req, { code: 'HTTP_ERROR', message: res.statusMessage || '' }, duration);
+    } else {
+      logRequest(req, res, duration);
+    }
+  });
+  next();
+});
 
 // --- Routes ---
 app.use('/api/users', require('./routes/users'));
