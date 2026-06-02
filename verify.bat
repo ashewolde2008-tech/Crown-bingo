@@ -65,11 +65,12 @@ echo.
 
 :: Summary
 echo =============================================
-if %ERRORS%==0 (
-    echo  All checks passed! Project is complete.
-) else (
-    echo  %ERRORS% file(s) are missing!
-)
+if %ERRORS%==0 goto :summary_ok
+echo  %ERRORS% file(s) are missing!
+goto :summary_end
+:summary_ok
+echo  All checks passed! Project is complete.
+:summary_end
 echo =============================================
 echo.
 pause
