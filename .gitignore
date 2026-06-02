@@ -7,6 +7,10 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+admin-panel/.env
+crownbingo/.env
+superagentcrownbingo/.env
 
 # Build outputs
 build/
@@ -25,6 +29,7 @@ Thumbs.db
 # Firebase
 serviceAccountKey.json
 firebase-debug.log
+api/serviceAccountKey.json
 
 # Python
 __pycache__/

@@ -28,12 +28,10 @@ import {
     Delete as DeleteIcon,
     Search as SearchIcon,
 } from '@mui/icons-material';
-import { collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { apiPost } from '../../services/api';
+import { apiGet, apiDelete, apiPost, apiPatch } from '../../services/api';
 
 const getValidationSchema = (isEditing) => yup.object({
     username: yup.string('Enter username').required('Username is required'),
@@ -65,8 +63,7 @@ export default function UserManagement() {
             try {
                 if (editingUser) {
                     const { password, ...updateData } = values;
-                    const userRef = doc(db, 'users', editingUser.id);
-                    await updateDoc(userRef, updateData);
+                    await apiPatch(`/api/users/${editingUser.id}`, updateData);
                     toast.success('User updated successfully');
                 } else {
                     const { password, ...userData } = values;
@@ -93,9 +90,8 @@ export default function UserManagement() {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const usersSnap = await getDocs(collection(db, 'users'));
-            const usersData = usersSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setUsers(usersData);
+            const result = await apiGet('/api/users');
+            setUsers(result.data || []);
         } catch (error) {
             toast.error('Error fetching users: ' + error.message);
         } finally {
@@ -121,7 +117,7 @@ export default function UserManagement() {
     const handleDelete = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
-                await deleteDoc(doc(db, 'users', userId));
+                await apiDelete(`/api/users/${userId}`);
                 toast.success('User deleted successfully');
                 fetchUsers();
             } catch (error) {
