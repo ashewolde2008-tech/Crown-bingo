@@ -1,0 +1,17 @@
+name: Daily Firestore Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - run: |
+          gcloud firestore export gs://crown-bingo-backups --project=${{ secrets.FIREBASE_PROJECT_ID }}
