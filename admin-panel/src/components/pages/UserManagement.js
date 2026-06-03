@@ -31,7 +31,8 @@ import {
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { apiGet, apiDelete, apiPost, apiPatch } from '../../services/api';
+import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 const getValidationSchema = (isEditing) => yup.object({
     username: yup.string('Enter username').required('Username is required'),
@@ -63,17 +64,17 @@ export default function UserManagement() {
             try {
                 if (editingUser) {
                     const { password, ...updateData } = values;
-                    await apiPatch(`/api/users/${editingUser.id}`, updateData);
+                    await updateDoc(doc(db, 'users', editingUser.id), updateData);
                     toast.success('User updated successfully');
                 } else {
-                    const { password, ...userData } = values;
-                    await apiPost('/api/users', {
+                    await setDoc(doc(collection(db, 'users')), {
                         email: values.email,
-                        password: values.password,
                         username: values.username,
                         phone: values.phone || '',
-                        initialBalance: Number(values.balance) || 0,
-                        role: 'user'
+                        balance: Number(values.balance) || 0,
+                        role: 'user',
+                        isActive: true,
+                        createdAt: new Date().toISOString()
                     });
                     toast.success('User created successfully');
                 }
@@ -90,8 +91,9 @@ export default function UserManagement() {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const result = await apiGet('/api/users');
-            setUsers(result.data || []);
+            const snap = await getDocs(collection(db, 'users'));
+            const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            setUsers(data);
         } catch (error) {
             toast.error('Error fetching users: ' + error.message);
         } finally {
@@ -117,7 +119,7 @@ export default function UserManagement() {
     const handleDelete = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
-                await apiDelete(`/api/users/${userId}`);
+                await deleteDoc(doc(db, 'users', userId));
                 toast.success('User deleted successfully');
                 fetchUsers();
             } catch (error) {
