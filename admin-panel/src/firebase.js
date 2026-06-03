@@ -5,7 +5,7 @@ import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || 'AIzaSyDPkQnxtMFKApBG5mle9yRsfgxlm5yS3do',
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || 'bingo-27d37.firebaseapp.com',
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || 'bingo-27d37',
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'bingo-27d37.firebasestorage.app',
