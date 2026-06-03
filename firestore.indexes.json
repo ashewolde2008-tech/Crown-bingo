@@ -90,7 +90,7 @@
       ]
     },
     {
-      "collectionGroup": "auditLogs",
+      "collectionGroup": "audit_logs",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "action", "order": "ASCENDING" },
