@@ -28,7 +28,7 @@ export default function AdminLogin() {
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const token = await userCredential.user.getIdTokenResult();
+            const token = await userCredential.user.getIdTokenResult(true);
 
             if (token.claims.role === 'SUPER_ADMIN') {
                 toast.success('Login successful!');

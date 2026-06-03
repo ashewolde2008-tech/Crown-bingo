@@ -64,7 +64,7 @@ function App() {
             if (currentUser) {
                 setUser(currentUser);
                 // Check if user is admin (you can add custom claims or check a database)
-                const token = await currentUser.getIdTokenResult();
+                const token = await currentUser.getIdTokenResult(true);
                 setIsAdmin(token.claims.role === 'SUPER_ADMIN');
             } else {
                 setUser(null);
