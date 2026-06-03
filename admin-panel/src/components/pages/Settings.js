@@ -5,13 +5,11 @@ import {
     TextField,
     Button,
     Typography,
-    Paper,
     Grid,
     Switch,
     FormControlLabel,
-    Divider,
 } from '@mui/material';
-import { collection, getDocs, setDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { toast } from 'react-toastify';
 import { Save as SaveIcon } from '@mui/icons-material';
@@ -32,22 +30,21 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const settingsSnap = await getDocs(collection(db, 'settings'));
+                if (settingsSnap.docs.length > 0) {
+                    setSettings({
+                        ...settings,
+                        ...settingsSnap.docs[0].data(),
+                    });
+                }
+            } catch (error) {
+                toast.error('Error fetching settings: ' + error.message);
+            }
+        };
         fetchSettings();
     }, []);
-
-    const fetchSettings = async () => {
-        try {
-            const settingsSnap = await getDocs(collection(db, 'settings'));
-            if (settingsSnap.docs.length > 0) {
-                setSettings({
-                    ...settings,
-                    ...settingsSnap.docs[0].data(),
-                });
-            }
-        } catch (error) {
-            toast.error('Error fetching settings: ' + error.message);
-        }
-    };
 
     const handleChange = (field, value) => {
         setSettings({

@@ -14,7 +14,7 @@ import {
     ReceiptLong as BetsIcon,
     TrendingUp as TrendingIcon,
 } from '@mui/icons-material';
-import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (

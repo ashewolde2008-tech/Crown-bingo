@@ -28,7 +28,7 @@ import {
     Delete as DeleteIcon,
     Search as SearchIcon,
 } from '@mui/icons-material';
-import { collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
@@ -71,7 +71,7 @@ export default function AgentManagement() {
                     await updateDoc(agentRef, updateData);
                     toast.success('Agent updated successfully');
                 } else {
-                    const { password, ...agentData } = values;
+                    const { password } = values;
                     await apiPost('/api/users', {
                         email: values.email,
                         password: values.password,
