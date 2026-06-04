@@ -6,8 +6,9 @@
 - **admin-panel/**: Super admin dashboard (React source, Firebase `bingo-27d37-5661f`)
 
 ## Key Config
-- Firebase project: `bingo-27d37` (apiKey: `AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o`)
-- Admin panel project: `bingo-27d37-5661f` (apiKey: `AIzaSyDPkQnxtMFKApBG5mle9yRsfgxlm5yS3do`)
+- Unified project: `bingo-27d37-5661f` (apiKey: `AIzaSyDPkQnxtMFKApBG5mle9yRsfgxlm5yS3do`)
+- All three apps (crownbingo, superagentcrownbingo, admin-panel) use the same Firebase project
+- The player project `bingo-27d37` (project number `509582453061`) uses apiKey `AIzaSyDM_bwlzo...` but is NOT accessible via Firebase Console; NOT used by any deployed app
 - Roles: `SUPER_ADMIN`, `SUPER_AGENT`, `USER` (stored in `users.role` field + Firebase custom claims)
 - Deployment: Netlify (3 sites), no Firebase Hosting, no Cloud Functions (Spark plan)
 

@@ -15,7 +15,7 @@ const firebaseConfig = {
 };
 
 const crownbingoConfig = {
-  apiKey: "AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o",
+  apiKey: "AIzaSyDPkQnxtMFKApBG5mle9yRsfgxlm5yS3do",
   authDomain: "bingo-27d37-5661f.firebaseapp.com",
   projectId: "bingo-27d37-5661f",
   storageBucket: "bingo-27d37-5661f.firebasestorage.app",
