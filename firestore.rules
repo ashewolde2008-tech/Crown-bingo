@@ -5,99 +5,53 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function getUserRole() {
-      return request.auth.token.role;
-    }
-
-    function isSuperAdmin() {
-      return isAuthenticated() && getUserRole() == 'SUPER_ADMIN';
-    }
-
-    function isSuperAgent() {
-      return isAuthenticated() && getUserRole() == 'SUPER_AGENT';
-    }
-
-    function isUser() {
-      return isAuthenticated() && getUserRole() == 'USER';
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // Users collection
+    // Admin-managed collections - any authenticated user can manage
     match /users/{userId} {
-      // Any authenticated user (created by admin) can read users
-      // SUPER_ADMIN/SUPER_AGENT: full write access
-      // Regular user: can create/update own document
-      allow read: if isAuthenticated();
-      allow create: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && request.resource.data.uid == request.auth.uid);
-      allow update: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && isOwner(userId));
-      allow delete: if isSuperAdmin();
+      allow read, write: if isAuthenticated();
     }
 
-    // Agents collection
     match /agents/{agentId} {
-      // Any authenticated user can read agents
-      // SUPER_ADMIN: full access
-      // SUPER_AGENT: read/update
-      allow read: if isAuthenticated();
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin() || isSuperAgent();
-      allow delete: if isSuperAdmin();
+      allow read, write: if isAuthenticated();
     }
 
-    // Transactions collection
+    // Player-owned data - scoped to the owning user
     match /transactions/{txnId} {
-      allow read: if isSuperAdmin() || isSuperAgent() || (isUser() && resource.data.userId == request.auth.uid);
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated() &&
                     request.resource.data.amount > 0 &&
                     request.resource.data.amount <= 10000 &&
                     request.resource.data.userId == request.auth.uid &&
-                    request.resource.data.status == 'PENDING' &&
-                    !('processed' in request.resource.data);
-      allow update: if isSuperAdmin() &&
-                    request.resource.data.status in ['COMPLETED', 'FAILED'];
+                    request.resource.data.status == 'PENDING';
+      allow update: if false;
       allow delete: if false;
     }
 
-    // Games collection
     match /games/{gameId} {
-      // SUPER_ADMIN: full access
-      // SUPER_AGENT: read games they manage
-      // USER: read own games
-      allow read: if isSuperAdmin() || isSuperAgent() || (isUser() && resource.data.userId == request.auth.uid);
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated();
-      allow update: if isSuperAdmin();
-      allow delete: if isSuperAdmin();
+      allow update: if false;
+      allow delete: if false;
     }
 
-    // Bets collection
     match /bets/{betId} {
-      allow read: if isSuperAdmin() || isSuperAgent() || (isUser() && resource.data.userId == request.auth.uid);
-      allow create: if isUser() &&
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() &&
                     request.resource.data.userId == request.auth.uid &&
                     request.resource.data.amount > 0 &&
                     request.resource.data.amount <= 1000 &&
                     request.resource.data.gameId != null &&
                     request.resource.data.status == 'ACTIVE';
-      allow update: if isSuperAdmin();
+      allow update: if false;
       allow delete: if false;
     }
 
-    // Settings collection
+    // System collections - no direct client access
     match /settings/{settingId} {
-      // Only SUPER_ADMIN can manage settings
-      allow read: if isSuperAdmin();
-      allow write: if isSuperAdmin();
+      allow read, write: if false;
     }
 
-    // Audit logs collection
     match /audit_logs/{logId} {
-      // Only SUPER_ADMIN can read audit logs
-      // Service accounts or SUPER_ADMIN can write
-      allow read: if isSuperAdmin();
-      allow write: if isSuperAdmin();
+      allow read, write: if false;
     }
 
     // Deny all other access by default

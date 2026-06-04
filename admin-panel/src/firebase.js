@@ -16,12 +16,12 @@ const firebaseConfig = {
 
 const crownbingoConfig = {
   apiKey: "AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o",
-  authDomain: "bingo-27d37.firebaseapp.com",
-  projectId: "bingo-27d37",
-  storageBucket: "bingo-27d37.firebasestorage.app",
-  messagingSenderId: "509582453061",
-  appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-  measurementId: "G-VTLQ243Q66"
+  authDomain: "bingo-27d37-5661f.firebaseapp.com",
+  projectId: "bingo-27d37-5661f",
+  storageBucket: "bingo-27d37-5661f.firebasestorage.app",
+  messagingSenderId: "330815222659",
+  appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+  measurementId: "G-CD4DWDC8SW"
 };
 
 const app = initializeApp(firebaseConfig);

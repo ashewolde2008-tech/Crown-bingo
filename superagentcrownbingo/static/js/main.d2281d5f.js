@@ -37241,9 +37241,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             }),
             iE = (_S(oE), nE(oE)),
             aE = jg(oE);
@@ -37331,9 +37331,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             }),
             cE = (_S(lE), nE(lE)),
             uE = jg(lE);
@@ -37414,9 +37414,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             }) : Tl()[0]),
             pE = (0, zw.A)((0, Oe.jsx)("path", {
                 d: "M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"
@@ -58371,9 +58371,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             }),
             YU = (_S(KU), jg(KU)),
             GU = () => {
@@ -59125,9 +59125,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             })),
             IW = () => {
                 const [e, n] = (0, t.useState)(""), [r, o] = (0, t.useState)(""), [i, a] = (0, t.useState)({

@@ -40155,9 +40155,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             }),
             OE = (TE(PE), K_(PE)),
             DE = e => "number" == typeof e && !isNaN(e),
@@ -49653,9 +49653,9 @@
             authDomain: "bingo-27d37.firebaseapp.com",
             projectId: "bingo-27d37-5661f",
             storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-            messagingSenderId: "509582453061",
-            appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-            measurementId: "G-VTLQ243Q66"
+            messagingSenderId: "330815222659",
+            appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+            measurementId: "G-CD4DWDC8SW"
         });
         TE(yL);
         (function(e, t) {
@@ -61573,9 +61573,9 @@
                 authDomain: "bingo-27d37.firebaseapp.com",
                 projectId: "bingo-27d37-5661f",
                 storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-                messagingSenderId: "509582453061",
-                appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-                measurementId: "G-VTLQ243Q66"
+                messagingSenderId: "330815222659",
+                appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+                measurementId: "G-CD4DWDC8SW"
             }),
             cq = (TE(lq), K_(lq)),
             uq = () => {
@@ -62208,9 +62208,9 @@
             authDomain: "bingo-27d37.firebaseapp.com",
             projectId: "bingo-27d37-5661f",
             storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-            messagingSenderId: "509582453061",
-            appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
-            measurementId: "G-VTLQ243Q66"
+            messagingSenderId: "330815222659",
+            appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
+            measurementId: "G-CD4DWDC8SW"
         });
         TE(Sq);
         const Aq = function() {
