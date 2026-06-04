@@ -47,11 +47,13 @@ service cloud.firestore {
 
     // System collections - no direct client access
     match /settings/{settingId} {
-      allow read, write: if false;
+      allow read, write: if isAuthenticated();
     }
 
     match /audit_logs/{logId} {
-      allow read, write: if false;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
     }
 
     // Deny all other access by default
