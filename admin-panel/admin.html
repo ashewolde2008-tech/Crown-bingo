@@ -1070,33 +1070,45 @@
         e.preventDefault();
         const email = document.getElementById('userEmail').value;
         const password = document.getElementById('userPassword').value;
-        
-        // Step 1: Create Auth user in crownbingo's Auth system
+        const username = document.getElementById('username').value;
+        const phone = document.getElementById('userPhone').value;
+        const balance = parseFloat(document.getElementById('userBalance').value) || 0;
+
+        console.log('Creating user in Firebase Auth:', email);
+
+        // Step 1: Create Auth user
         crownbingoAuth.createUserWithEmailAndPassword(email, password).then((userCred) => {
             var uid = userCred.user.uid;
-            // Step 2: Re-authenticate as admin in admin's Auth system
-            if (adminEmail && adminPassword) {
-                return firebase.auth().signInWithEmailAndPassword(adminEmail, adminPassword).then(function() {
-                    return uid;
-                });
-            }
-            return uid;
+            console.log('Auth user created, uid:', uid);
+
+            // Step 2: Re-authenticate as admin so Firestore writes succeed
+            var reauth = (adminEmail && adminPassword)
+                ? firebase.auth().signInWithEmailAndPassword(adminEmail, adminPassword).then(() => uid)
+                : Promise.resolve(uid);
+
+            return reauth;
         }).then(function(uid) {
-            // Step 3: Write to Firestore as admin using uid as document ID
-            return db.collection('users').doc(uid).set({
+            // Step 3: Write to Firestore with all required fields
+            var userData = {
                 uid: uid,
-                username: document.getElementById('username').value,
+                username: username,
                 email: email,
-                phone: document.getElementById('userPhone').value,
-                balance: parseFloat(document.getElementById('userBalance').value),
+                phone: phone,
+                balance: balance,
+                role: 'user',           // ✅ required by crownbingo login
                 isActive: true,
+                isDisabled: false,
                 createdAt: new Date()
-            });
+            };
+            console.log('Writing user to Firestore:', userData);
+            return db.collection('users').doc(uid).set(userData);
         }).then(() => {
+            console.log('User saved to Firestore successfully');
             alert('User created successfully!');
             closeUserModal();
             loadUsers();
         }).catch(error => {
+            console.error('Error creating user:', error.code, error.message);
             alert('Error: ' + error.message);
         });
     }
@@ -1167,35 +1179,56 @@
         e.preventDefault();
         const email = document.getElementById('agentEmail').value;
         const password = document.getElementById('agentPassword').value;
-        
-        // Step 1: Create Auth user in crownbingo's Auth system
+        const agentName = document.getElementById('agentName').value;
+        const agentCode = document.getElementById('agentCode').value;
+        const phone = document.getElementById('agentPhone').value;
+        const commissionRate = parseFloat(document.getElementById('agentCommission').value) || 5;
+
+        console.log('Creating agent in Firebase Auth:', email);
+
+        // Step 1: Create Auth user
         crownbingoAuth.createUserWithEmailAndPassword(email, password).then((userCred) => {
             var uid = userCred.user.uid;
-            // Step 2: Re-authenticate as admin in admin's Auth system
-            if (adminEmail && adminPassword) {
-                return firebase.auth().signInWithEmailAndPassword(adminEmail, adminPassword).then(function() {
-                    return uid;
-                });
-            }
-            return uid;
+            console.log('Auth agent created, uid:', uid);
+
+            // Step 2: Re-authenticate as admin so Firestore writes succeed
+            var reauth = (adminEmail && adminPassword)
+                ? firebase.auth().signInWithEmailAndPassword(adminEmail, adminPassword).then(() => uid)
+                : Promise.resolve(uid);
+
+            return reauth;
         }).then(function(uid) {
-            // Step 3: Write to Firestore as admin using uid as document ID
-            return db.collection('agents').doc(uid).set({
+            // Step 3: Write full agent data to BOTH 'agents' AND 'users' collections
+            // superagentcrownbingo login queries the 'users' collection for userRole='superAgent'
+            var agentData = {
                 uid: uid,
-                agentName: document.getElementById('agentName').value,
-                agentCode: document.getElementById('agentCode').value,
+                agentName: agentName,
+                agentCode: agentCode,
                 email: email,
-                phone: document.getElementById('agentPhone').value,
-                commissionRate: parseFloat(document.getElementById('agentCommission').value),
+                phone: phone,
+                commissionRate: commissionRate,
+                userRole: 'superAgent',  // ✅ required by superagent login check
+                role: 'agent',           // ✅ general role field
                 isActive: true,
+                isDisabled: false,
+                balance: 0,
                 totalSales: 0,
+                totalEarnings: 0,
                 createdAt: new Date()
-            });
+            };
+            console.log('Writing agent to Firestore (agents + users):', agentData);
+            // Write to both collections atomically
+            var batch = db.batch();
+            batch.set(db.collection('agents').doc(uid), agentData);
+            batch.set(db.collection('users').doc(uid), agentData);  // ✅ superagent login queries users
+            return batch.commit();
         }).then(() => {
+            console.log('Agent saved to Firestore successfully');
             alert('Agent created successfully!');
             closeAgentModal();
             loadAgents();
         }).catch(error => {
+            console.error('Error creating agent:', error.code, error.message);
             alert('Error: ' + error.message);
         });
     }
