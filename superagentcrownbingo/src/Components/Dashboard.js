@@ -63,8 +63,8 @@ function Copyright(props) {
             'Copyright © '
         } <
         Link color = "inherit"
-        href = "https://habeshagaming.com/" >
-        Habeshagaming.com <
+        href = "#" >
+        Crown Bingo <
         /Link>{' '} {
             new Date().getFullYear()
         } {

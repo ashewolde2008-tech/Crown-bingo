@@ -28,12 +28,11 @@ import {
     Delete as DeleteIcon,
     Search as SearchIcon,
 } from '@mui/icons-material';
-import { collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { db, crownbingoAuth, crownbingoDb, createUserWithEmailAndPassword } from '../../firebase';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { apiPost } from '../../services/api';
 
 const getValidationSchema = (isEditing) => yup.object({
     agentName: yup.string('Enter agent name').required('Agent name is required'),
@@ -69,19 +68,32 @@ export default function AgentManagement() {
                     const { password, ...updateData } = values;
                     const agentRef = doc(db, 'agents', editingAgent.id);
                     await updateDoc(agentRef, updateData);
+                    try { await updateDoc(doc(db, 'users', editingAgent.id), updateData); } catch (e) { /* may not exist in users collection */ }
+                    try { await updateDoc(doc(crownbingoDb, 'users', editingAgent.id), updateData); } catch (e) { /* may not exist in crownbingo project */ }
                     toast.success('Agent updated successfully');
                 } else {
                     const { password } = values;
-                    await apiPost('/api/users', {
-                        email: values.email,
-                        password: password,
-                        username: values.agentName,
-                        phone: values.phone || '',
-                        initialBalance: 0,
-                        role: 'agent',
+                    const userCred = await createUserWithEmailAndPassword(crownbingoAuth, values.email, password);
+                    const uid = userCred.user.uid;
+                    const agentData = {
+                        uid,
+                        agentName: values.agentName,
                         agentCode: values.agentCode,
-                        commissionRate: Number(values.commissionRate) || 5
-                    });
+                        email: values.email,
+                        phone: values.phone || '',
+                        commissionRate: Number(values.commissionRate) || 5,
+                        balance: 0,
+                        userRole: 'superAgent',
+                        role: 'agent',
+                        isActive: true,
+                        isDisabled: false,
+                        createdAt: new Date().toISOString(),
+                        totalSales: 0,
+                        totalEarnings: 0
+                    };
+                    await setDoc(doc(db, 'users', uid), agentData);
+                    await setDoc(doc(db, 'agents', uid), agentData);
+                    await setDoc(doc(crownbingoDb, 'users', uid), agentData);
                     toast.success('Agent created successfully');
                 }
                 setOpenDialog(false);

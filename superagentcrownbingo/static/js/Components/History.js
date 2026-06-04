@@ -44,7 +44,7 @@ function Copyright(props) {
         } <
         Link color = "inherit"
         href = "https://mui.com/" >
-        habesha Gaming <
+        Crown Bingo <
         /Link>{' '} {
             new Date().getFullYear()
         } {

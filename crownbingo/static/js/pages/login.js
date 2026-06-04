@@ -139,7 +139,7 @@ const LoginPage = () => {
                 color: '#17c190'
             }
         } >
-        Habesha Gamming <
+        Crown Bingo <
         /Typography> <
         Typography component = "h1"
         variant = "h5"

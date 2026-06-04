@@ -61633,7 +61633,7 @@
                                     marginBottom: "20px",
                                     color: "#17c190"
                                 },
-                                children: "Habesha Gamming"
+                                children: "Crown Bingo"
                             }), (0, Re.jsx)(tt, {
                                 component: "h1",
                                 variant: "h5",

@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
@@ -14,15 +14,29 @@ const firebaseConfig = {
   measurementId: 'G-CD4DWDC8SW'
 };
 
+const crownbingoConfig = {
+  apiKey: "AIzaSyDM_bwlzoRTNBtGTm8WFWfnol_aTA3Or2o",
+  authDomain: "bingo-27d37.firebaseapp.com",
+  projectId: "bingo-27d37",
+  storageBucket: "bingo-27d37.firebasestorage.app",
+  messagingSenderId: "509582453061",
+  appId: "1:509582453061:web:7506bd6e5ff45c5e58b62c",
+  measurementId: "G-VTLQ243Q66"
+};
+
 const app = initializeApp(firebaseConfig);
+const crownbingoApp = initializeApp(crownbingoConfig, 'crownbingo');
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const crownbingoAuth = getAuth(crownbingoApp);
+const crownbingoDb = getFirestore(crownbingoApp);
 
 let analytics = null;
 try { analytics = getAnalytics(app); } catch (e) { /* analytics unavailable */ }
 
 export {
-  auth, db, storage, analytics,
-  onAuthStateChanged, signInWithEmailAndPassword, signOut
+  auth, db, storage, analytics, crownbingoAuth, crownbingoDb,
+  onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword
 };

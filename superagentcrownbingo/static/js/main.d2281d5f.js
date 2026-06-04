@@ -47210,8 +47210,8 @@
                 ...e,
                 children: ["Copyright \xa9 ", (0, Oe.jsx)(yi, {
                     color: "inherit",
-                    href: "https://habeshagaming.com/",
-                    children: "Habeshagaming.com"
+                    href: "#",
+                    children: "Crown Bingo"
                 }), " ", (new Date).getFullYear(), "."]
             })
         }
@@ -57609,7 +57609,7 @@
                 children: ["Copyright \xa9 ", (0, Oe.jsx)(yi, {
                     color: "inherit",
                     href: "https://mui.com/",
-                    children: "habesha Gaming"
+                    children: "Crown Bingo"
                 }), " ", (new Date).getFullYear(), "."]
             })
         }
@@ -58179,7 +58179,7 @@
                 children: ["Copyright \xa9 ", (0, Oe.jsx)(yi, {
                     color: "inherit",
                     href: "https://mui.com/",
-                    children: "habesha Gaming"
+                    children: "Crown Bingo"
                 }), " ", (new Date).getFullYear(), "."]
             })
         }
@@ -59232,7 +59232,7 @@
                 children: ["Copyright \xa9 ", (0, Oe.jsx)(yi, {
                     color: "inherit",
                     href: "https://mui.com/",
-                    children: "habesha Gaming"
+                    children: "Crown Bingo"
                 }), " ", (new Date).getFullYear(), "."]
             })
         }

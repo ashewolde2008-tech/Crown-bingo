@@ -41,5 +41,8 @@ venv/
 logs/
 *.log
 
+# Session logs
+session-ses_*.md
+
 # Local Netlify folder
 .netlify
