@@ -743,6 +743,16 @@
                         </div>
                     </div>
                     <button class="btn btn-success" onclick="saveSettings()" style="margin-top: 20px; width: 100%; padding: 12px;">Save All Settings</button>
+
+                    <div class="card" style="margin-top: 20px; border: 2px solid #e74c3c;">
+                        <h3 style="color: #e74c3c;">🔧 Data Maintenance</h3>
+                        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
+                            If users or agents were created before the fix and can't login, click below to patch their missing role fields in Firestore.
+                        </p>
+                        <button class="btn btn-danger" onclick="patchMissingRoles()" style="width: 100%; padding: 12px;">
+                            Fix Existing Records (Patch Missing Roles)
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1241,6 +1251,68 @@
             }).catch(error => {
                 alert('Error: ' + error.message);
             });
+        }
+    }
+
+    // Patch existing records missing role fields
+    async function patchMissingRoles() {
+        if (!confirm('This will update all existing users/agents that are missing role fields. Continue?')) return;
+        let fixed = 0;
+        try {
+            // Patch users missing 'role' field
+            const usersSnap = await db.collection('users').get();
+            const batch1 = db.batch();
+            let userBatchCount = 0;
+            usersSnap.docs.forEach(docSnap => {
+                const data = docSnap.data();
+                const updates = {};
+                if (!data.role && !data.userRole) {
+                    // No role at all — default to user
+                    updates.role = 'user';
+                    updates.isDisabled = data.isDisabled !== undefined ? data.isDisabled : false;
+                    fixed++;
+                } else if (data.role === 'agent' && !data.userRole) {
+                    // Agent missing userRole
+                    updates.userRole = 'superAgent';
+                    updates.isDisabled = data.isDisabled !== undefined ? data.isDisabled : false;
+                    fixed++;
+                }
+                if (Object.keys(updates).length > 0) {
+                    batch1.update(docSnap.ref, updates);
+                    userBatchCount++;
+                }
+            });
+            if (userBatchCount > 0) await batch1.commit();
+
+            // Patch agents not in 'users' collection
+            const agentsSnap = await db.collection('agents').get();
+            const batch2 = db.batch();
+            let agentBatchCount = 0;
+            for (const docSnap of agentsSnap.docs) {
+                const data = docSnap.data();
+                // Check if this agent exists in users collection
+                const userDoc = await db.collection('users').doc(docSnap.id).get();
+                if (!userDoc.exists) {
+                    // Agent not in users collection — add it
+                    const agentData = Object.assign({}, data, {
+                        userRole: 'superAgent',
+                        role: 'agent',
+                        isDisabled: data.isDisabled !== undefined ? data.isDisabled : false
+                    });
+                    batch2.set(db.collection('users').doc(docSnap.id), agentData);
+                    agentBatchCount++;
+                    fixed++;
+                }
+            }
+            if (agentBatchCount > 0) await batch2.commit();
+
+            alert('Patch complete! Fixed ' + fixed + ' record(s). Refreshing...');
+            loadUsers();
+            loadAgents();
+            loadDashboardStats();
+        } catch (error) {
+            console.error('Patch error:', error);
+            alert('Patch error: ' + error.message);
         }
     }
 
