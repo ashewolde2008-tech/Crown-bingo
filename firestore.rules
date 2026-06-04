@@ -27,10 +27,10 @@ service cloud.firestore {
 
     // Users collection
     match /users/{userId} {
-      // SUPER_ADMIN: full access to all user documents
-      // SUPER_AGENT: read/create users they manage
-      // Any authenticated user: read/update own document (by Auth UID as doc ID)
-      allow read: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && isOwner(userId));
+      // Any authenticated user (created by admin) can read users
+      // SUPER_ADMIN/SUPER_AGENT: full write access
+      // Regular user: can create/update own document
+      allow read: if isAuthenticated();
       allow create: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && request.resource.data.uid == request.auth.uid);
       allow update: if isSuperAdmin() || isSuperAgent() || (isAuthenticated() && isOwner(userId));
       allow delete: if isSuperAdmin();
@@ -38,9 +38,10 @@ service cloud.firestore {
 
     // Agents collection
     match /agents/{agentId} {
+      // Any authenticated user can read agents
       // SUPER_ADMIN: full access
       // SUPER_AGENT: read/update
-      allow read: if isSuperAdmin() || isSuperAgent();
+      allow read: if isAuthenticated();
       allow create: if isSuperAdmin();
       allow update: if isSuperAdmin() || isSuperAgent();
       allow delete: if isSuperAdmin();
