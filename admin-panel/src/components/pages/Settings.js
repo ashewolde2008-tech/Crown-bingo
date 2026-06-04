@@ -34,10 +34,10 @@ export default function SettingsPage() {
             try {
                 const settingsSnap = await getDocs(collection(db, 'settings'));
                 if (settingsSnap.docs.length > 0) {
-                    setSettings({
-                        ...settings,
+                    setSettings(prev => ({
+                        ...prev,
                         ...settingsSnap.docs[0].data(),
-                    });
+                    }));
                 }
             } catch (error) {
                 toast.error('Error fetching settings: ' + error.message);

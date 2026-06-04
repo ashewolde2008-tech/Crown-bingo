@@ -74,7 +74,7 @@ export default function AgentManagement() {
                     const { password } = values;
                     await apiPost('/api/users', {
                         email: values.email,
-                        password: values.password,
+                        password: password,
                         username: values.agentName,
                         phone: values.phone || '',
                         initialBalance: 0,
