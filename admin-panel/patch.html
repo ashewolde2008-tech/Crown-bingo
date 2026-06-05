@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crown Bingo – Data Patch Tool</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        h1 { font-size: 22px; color: #2c3e50; margin-bottom: 6px; }
+        .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 28px; }
+        .status-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 120px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #2c3e50;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            max-height: 260px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-bottom: 10px;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-login  { background: linear-gradient(135deg,#2c3e50,#34495e); color:#fff; }
+        .btn-patch  { background: linear-gradient(135deg,#e74c3c,#c0392b); color:#fff; }
+        .btn-done   { background: linear-gradient(135deg,#2ecc71,#27ae60); color:#fff; }
+        input {
+            width: 100%; padding: 10px 14px; border: 1px solid #dee2e6;
+            border-radius: 8px; font-size: 14px; margin-bottom: 12px;
+        }
+        .label { font-size: 13px; color: #7f8c8d; margin-bottom: 4px; }
+        .step { margin-bottom: 20px; }
+        .step h3 { font-size: 15px; color: #2c3e50; margin-bottom: 10px; }
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; background:#e74c3c; color:#fff; margin-left:6px;
+        }
+        .badge.green { background: #2ecc71; }
+        .warning {
+            background: #fff3cd; border: 1px solid #ffc107;
+            border-radius: 8px; padding: 12px; margin-bottom: 20px;
+            font-size: 13px; color: #856404;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🔧 Crown Bingo — Data Patch Tool</h1>
+    <p class="subtitle">Fixes users/agents created without role fields so they can login.</p>
+
+    <div class="warning">
+        ⚠️ Login with your <strong>SUPER_ADMIN</strong> account to authenticate before patching.
+    </div>
+
+    <!-- Step 1: Login -->
+    <div class="step" id="stepLogin">
+        <h3>Step 1: Admin Login <span class="badge" id="loginBadge">required</span></h3>
+        <div class="label">Email</div>
+        <input type="email" id="adminEmail" placeholder="admin@example.com" />
+        <div class="label">Password</div>
+        <input type="password" id="adminPass" placeholder="Password" />
+        <button class="btn btn-login" id="btnLogin" onclick="doLogin()">Sign In to Firebase</button>
+    </div>
+
+    <!-- Step 2: Patch -->
+    <div class="step" id="stepPatch" style="display:none">
+        <h3>Step 2: Patch Records <span class="badge" id="patchBadge">pending</span></h3>
+        <button class="btn btn-patch" id="btnPatch" onclick="runPatch()">
+            🚀 Fix All Existing Users &amp; Agents
+        </button>
+    </div>
+
+    <!-- Log -->
+    <div class="status-box" id="log">Waiting for login...\n</div>
+</div>
+
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyDPkQnxtMFKApBG5mle9yRsfgxlm5yS3do",
+    authDomain: "bingo-27d37-5661f.firebaseapp.com",
+    projectId: "bingo-27d37-5661f",
+    storageBucket: "bingo-27d37-5661f.firebasestorage.app",
+    messagingSenderId: "330815222659",
+    appId: "1:330815222659:web:4890bf5cddc728bf29bcb6"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+function log(msg, type) {
+    const box = document.getElementById('log');
+    const ts  = new Date().toLocaleTimeString();
+    box.textContent += '[' + ts + '] ' + msg + '\n';
+    box.scrollTop = box.scrollHeight;
+    console.log(msg);
+}
+
+async function doLogin() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const pass  = document.getElementById('adminPass').value;
+    if (!email || !pass) { log('ERROR: Enter email and password.'); return; }
+
+    document.getElementById('btnLogin').disabled = true;
+    log('Signing in as ' + email + '...');
+
+    try {
+        const cred = await auth.signInWithEmailAndPassword(email, pass);
+        log('Signed in: ' + cred.user.email);
+
+        // Verify SUPER_ADMIN claim
+        const token = await cred.user.getIdTokenResult(true);
+        if (token.claims.role === 'SUPER_ADMIN') {
+            log('✅ SUPER_ADMIN verified. Ready to patch.');
+            document.getElementById('loginBadge').textContent = 'done';
+            document.getElementById('loginBadge').className = 'badge green';
+            document.getElementById('stepPatch').style.display = 'block';
+        } else {
+            log('⚠️  Logged in but no SUPER_ADMIN claim. Will attempt patch anyway (Firestore rules may block).');
+            document.getElementById('loginBadge').textContent = 'no admin claim';
+            document.getElementById('loginBadge').className = 'badge';
+            document.getElementById('stepPatch').style.display = 'block';
+        }
+    } catch (err) {
+        log('ERROR login: ' + err.message);
+        document.getElementById('btnLogin').disabled = false;
+    }
+}
+
+async function runPatch() {
+    document.getElementById('btnPatch').disabled = true;
+    document.getElementById('patchBadge').textContent = 'running…';
+    log('\n=== PATCH STARTED ===');
+
+    let fixed = 0;
+    let errors = 0;
+
+    try {
+        // ── 1. Read all users ──
+        log('Reading users collection…');
+        const usersSnap = await db.collection('users').get();
+        log('Found ' + usersSnap.size + ' user document(s).');
+
+        for (const docSnap of usersSnap.docs) {
+            const d = docSnap.data();
+            const updates = {};
+
+            if (!d.role && !d.userRole) {
+                updates.role       = 'user';
+                updates.isDisabled = d.isDisabled !== undefined ? d.isDisabled : false;
+                log('  [USER] ' + (d.email || docSnap.id) + ' → adding role:user');
+            } else if ((d.role === 'agent') && !d.userRole) {
+                updates.userRole   = 'superAgent';
+                updates.isDisabled = d.isDisabled !== undefined ? d.isDisabled : false;
+                log('  [AGENT in users] ' + (d.email || docSnap.id) + ' → adding userRole:superAgent');
+            } else {
+                log('  [OK] ' + (d.email || docSnap.id) + ' role=' + d.role + ' userRole=' + (d.userRole || '—'));
+                continue;
+            }
+
+            try {
+                await docSnap.ref.update(updates);
+                fixed++;
+            } catch (e) {
+                log('  ERROR updating ' + docSnap.id + ': ' + e.message);
+                errors++;
+            }
+        }
+
+        // ── 2. Ensure all agents exist in users collection ──
+        log('\nReading agents collection…');
+        const agentsSnap = await db.collection('agents').get();
+        log('Found ' + agentsSnap.size + ' agent document(s).');
+
+        for (const docSnap of agentsSnap.docs) {
+            const d = docSnap.data();
+            const userDoc = await db.collection('users').doc(docSnap.id).get();
+
+            if (!userDoc.exists) {
+                log('  [MISSING] Agent ' + (d.email || docSnap.id) + ' not in users → adding…');
+                const agentData = Object.assign({}, d, {
+                    userRole:   'superAgent',
+                    role:       'agent',
+                    isDisabled: d.isDisabled !== undefined ? d.isDisabled : false
+                });
+                try {
+                    await db.collection('users').doc(docSnap.id).set(agentData);
+                    fixed++;
+                    log('  ✅ Added agent to users collection.');
+                } catch (e) {
+                    log('  ERROR writing agent to users: ' + e.message);
+                    errors++;
+                }
+            } else {
+                const ud = userDoc.data();
+                if (!ud.userRole) {
+                    log('  [PATCH] Agent in users missing userRole: ' + (d.email || docSnap.id));
+                    try {
+                        await db.collection('users').doc(docSnap.id).update({
+                            userRole: 'superAgent',
+                            role: 'agent',
+                            isDisabled: ud.isDisabled !== undefined ? ud.isDisabled : false
+                        });
+                        fixed++;
+                    } catch (e) {
+                        log('  ERROR: ' + e.message);
+                        errors++;
+                    }
+                } else {
+                    log('  [OK] Agent ' + (d.email || docSnap.id) + ' already in users.');
+                }
+            }
+        }
+
+        log('\n=== PATCH COMPLETE ===');
+        log('Fixed: ' + fixed + ' record(s) | Errors: ' + errors);
+
+        if (errors === 0) {
+            document.getElementById('patchBadge').textContent = 'done ✅';
+            document.getElementById('patchBadge').className = 'badge green';
+            document.getElementById('btnPatch').textContent = '✅ Patch Complete — Try Logging In Now';
+            document.getElementById('btnPatch').className = 'btn btn-done';
+        } else {
+            document.getElementById('patchBadge').textContent = errors + ' errors';
+            log('\n⚠️  Some errors occurred. This is usually a Firestore rules issue.');
+            log('   → Go to Firebase Console > Firestore > Rules and publish the rules.');
+        }
+    } catch (err) {
+        log('FATAL ERROR: ' + err.message);
+        log('\nIf you see PERMISSION_DENIED, your Firestore rules are not deployed yet.');
+        log('Go to: https://console.firebase.google.com/project/bingo-27d37-5661f/firestore/rules');
+        document.getElementById('btnPatch').disabled = false;
+    }
+}
+</script>
+</body>
+</html>
