@@ -32,7 +32,7 @@ import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { db, crownbingoAuth, crownbingoDb, createUserWithEmailAndPassword } from '../../firebase';
+import { db, auth, createUserWithEmailAndPassword } from '../../firebase';
 
 const getValidationSchema = (isEditing) => yup.object({
     username: yup.string('Enter username').required('Username is required'),
@@ -65,10 +65,9 @@ export default function UserManagement() {
                 if (editingUser) {
                     const { password, ...updateData } = values;
                     await updateDoc(doc(db, 'users', editingUser.id), updateData);
-                    try { await updateDoc(doc(crownbingoDb, 'users', editingUser.id), updateData); } catch (e) { /* may not exist in crownbingo project */ }
                     toast.success('User updated successfully');
                 } else {
-                    const userCred = await createUserWithEmailAndPassword(crownbingoAuth, values.email, values.password);
+                    const userCred = await createUserWithEmailAndPassword(auth, values.email, values.password);
                     const uid = userCred.user.uid;
                     const userData = {
                         uid,
@@ -82,7 +81,6 @@ export default function UserManagement() {
                         createdAt: new Date().toISOString()
                     };
                     await setDoc(doc(db, 'users', uid), userData);
-                    await setDoc(doc(crownbingoDb, 'users', uid), userData);
                     toast.success('User created successfully');
                 }
                 setOpenDialog(false);

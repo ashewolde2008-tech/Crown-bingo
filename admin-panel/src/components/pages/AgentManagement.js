@@ -29,7 +29,7 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { db, crownbingoAuth, crownbingoDb, createUserWithEmailAndPassword } from '../../firebase';
+import { db, auth, createUserWithEmailAndPassword } from '../../firebase';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -69,11 +69,10 @@ export default function AgentManagement() {
                     const agentRef = doc(db, 'agents', editingAgent.id);
                     await updateDoc(agentRef, updateData);
                     try { await updateDoc(doc(db, 'users', editingAgent.id), updateData); } catch (e) { /* may not exist in users collection */ }
-                    try { await updateDoc(doc(crownbingoDb, 'users', editingAgent.id), updateData); } catch (e) { /* may not exist in crownbingo project */ }
                     toast.success('Agent updated successfully');
                 } else {
                     const { password } = values;
-                    const userCred = await createUserWithEmailAndPassword(crownbingoAuth, values.email, password);
+                    const userCred = await createUserWithEmailAndPassword(auth, values.email, password);
                     const uid = userCred.user.uid;
                     const agentData = {
                         uid,
@@ -93,7 +92,6 @@ export default function AgentManagement() {
                     };
                     await setDoc(doc(db, 'users', uid), agentData);
                     await setDoc(doc(db, 'agents', uid), agentData);
-                    await setDoc(doc(crownbingoDb, 'users', uid), agentData);
                     toast.success('Agent created successfully');
                 }
                 setOpenDialog(false);

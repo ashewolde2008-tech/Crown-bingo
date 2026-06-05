@@ -14,29 +14,15 @@ const firebaseConfig = {
   measurementId: 'G-CD4DWDC8SW'
 };
 
-const crownbingoConfig = {
-  apiKey: "AIzaSyDPkQnxtMFKApBG5mle9yRsfgxlm5yS3do",
-  authDomain: "bingo-27d37-5661f.firebaseapp.com",
-  projectId: "bingo-27d37-5661f",
-  storageBucket: "bingo-27d37-5661f.firebasestorage.app",
-  messagingSenderId: "330815222659",
-  appId: "1:330815222659:web:4890bf5cddc728bf29bcb6",
-  measurementId: "G-CD4DWDC8SW"
-};
-
 const app = initializeApp(firebaseConfig);
-const crownbingoApp = initializeApp(crownbingoConfig, 'crownbingo');
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-const crownbingoAuth = getAuth(crownbingoApp);
-const crownbingoDb = getFirestore(crownbingoApp);
 
 let analytics = null;
 try { analytics = getAnalytics(app); } catch (e) { /* analytics unavailable */ }
 
 export {
-  auth, db, storage, analytics, crownbingoAuth, crownbingoDb,
+  auth, db, storage, analytics,
   onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword
 };
