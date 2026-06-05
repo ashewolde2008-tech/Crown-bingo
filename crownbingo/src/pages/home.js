@@ -2035,7 +2035,7 @@ export default function Home() {
                 }
             } >
             {
-                (betAmount - betAmount * userPoints[0] ?.casher_percent / 100).toFixed(0)
+                (betAmount - betAmount * (userData?.casher_percent || 0) / 100).toFixed(0)
             } <
             /Typography> <
             Typography fontSize = {
