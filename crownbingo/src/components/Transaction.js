@@ -270,30 +270,33 @@ export default function Transaction() {
         TableRow >
         <
         StyledTableCell > Date < /StyledTableCell> <
-        StyledTableCell > Percent < /StyledTableCell> <
-        StyledTableCell align = "right" > Points Added < /StyledTableCell> <
-        StyledTableCell align = "right" > UserName < /StyledTableCell> <
+        StyledTableCell align = "right" > Bet Amount < /StyledTableCell> <
+        StyledTableCell align = "right" > House Cut % < /StyledTableCell> <
+        StyledTableCell align = "right" > Prize (if won) < /StyledTableCell> <
+        StyledTableCell align = "right" > Balance After < /StyledTableCell> <
         /TableRow> <
         /TableHead> <
         TableBody > {
-            gameHistories.map((history, index) => ( <
+            sortedGameHistories.map((history, index) => ( <
                 StyledTableRow key = {
                     index
                 } >
                 <
                 StyledTableCell component = "th"
                 scope = "row" > {
-                    dayjs(history.date).format("DD/MM/YYYY HH:mm")
-                } { /* Display formatted date */ } <
-                /StyledTableCell> <
-                StyledTableCell align = "right" > {
-                    history.percent
+                    history.date ? dayjs.unix(history.date.seconds).format("DD/MM/YYYY HH:mm") : ''
                 } < /StyledTableCell> <
                 StyledTableCell align = "right" > {
-                    history.percent * 100 / history.pointsAdded
+                    history.betAmount
                 } < /StyledTableCell> <
                 StyledTableCell align = "right" > {
-                    (history.userName)
+                    history.cahser_percent
+                } < /StyledTableCell> <
+                StyledTableCell align = "right" > {
+                    ((history.betAmount || 0) * (history.cahser_percent || 0) / 100).toFixed(2)
+                } < /StyledTableCell> <
+                StyledTableCell align = "right" > {
+                    history.points
                 } < /StyledTableCell> <
                 /StyledTableRow>
             ))
