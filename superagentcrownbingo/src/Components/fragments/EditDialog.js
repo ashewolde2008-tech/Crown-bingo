@@ -43,6 +43,10 @@ export default function EditDialog({
         setRemainingPoints(pointsData ?.points);
         setPercent(pointsData ?.percent || 1);
 
+        if (!open) {
+            return;
+        }
+
         const fetchAdminPointsAndUserName = async () => {
             try {
                 const db = getFirestore();
@@ -81,7 +85,7 @@ export default function EditDialog({
         };
 
         fetchAdminPointsAndUserName();
-    }, [pointsData, adminId]);
+    }, [pointsData, adminId, open]);
 
 
     const handlePointsChange = (event) => {
