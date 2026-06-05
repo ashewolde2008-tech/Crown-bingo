@@ -1017,15 +1017,18 @@ export default function Home() {
         const userDoc = userDocSnapshot.docs[0];
         const userData = userDoc.data();
 
-        if (!userData.isVerified) {
-            // Open the phone verification dialog
-            setUserPhone(userData.phone || '');
-            setPhoneVerificationDialogOpen(true);
+        // Phone verification gate removed (per user request 2026-06-05) — see docs/superpowers/crownbingo-phone-verification-removal.md
+        // Phone is now optional. The /savePhone page and the PhoneVerificationDialog component
+        // are still available, but no longer enforced as a gate to start a new game.
+        // if (!userData.isVerified) {
+        //     // Open the phone verification dialog
+        //     setUserPhone(userData.phone || '');
+        //     setPhoneVerificationDialogOpen(true);
 
-            // User must verify their phone number
-            setIsLoading(false);
-            return;
-        }
+        //     // User must verify their phone number
+        //     setIsLoading(false);
+        //     return;
+        // }
         if (uid) {
             const pointsCollection = collection(db, 'points');
             const pointsQuery = query(pointsCollection, where('uid', '==', uid));
