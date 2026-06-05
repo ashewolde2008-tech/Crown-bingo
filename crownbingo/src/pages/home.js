@@ -1138,7 +1138,7 @@ export default function Home() {
         <
         Grid item xs = {
             1
-        } > {!isGameStarted ? < TemporaryDrawer / > : null
+        } > {!autoCall ? < TemporaryDrawer / > : null
         } <
         /Grid>
 
@@ -1956,7 +1956,7 @@ export default function Home() {
             lineHeight = {
                 1
             } >
-            HABESHAGAMING.COM <
+            CROWN BINGO <
             /Typography> <
             /Stack> <
             /Stack> <

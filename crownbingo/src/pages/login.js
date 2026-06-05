@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
+import TemporaryDrawer from '../components/drawer';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -80,15 +81,26 @@ const LoginPage = () => {
 
 
     return ( <
-        div className = "video-bg-container" > { /* Video Background */ } <
-        video autoPlay loop muted className = "video-bg" >
+        div className = "video-bg-container" >
         <
-        source src = "/bingo.mp4"
-        type = "video/mp4" / >
+        div className = "login-top-bar" >
         <
-        /video> { /* Overlay */ } <
-        div className = "overlay" > < /div>
+        TemporaryDrawer / >
+        <
+        /div>
 
+        <
+        div className = "login-form-wrap"
+        style = {
+            {
+                position: 'relative',
+                zIndex: 2,
+                marginTop: '10vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+            }
+        } >
         <
         Container component = "main"
         maxWidth = "xs"
@@ -96,7 +108,6 @@ const LoginPage = () => {
             {
                 position: 'relative',
                 zIndex: 2,
-                marginTop: '10vh',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -237,6 +248,7 @@ const LoginPage = () => {
         ToastContainer / >
         <
         /Container> <
+        /div> <
         /div>
     );
 };
