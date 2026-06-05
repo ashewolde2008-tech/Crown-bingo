@@ -13,7 +13,7 @@ import { LanguageProvider } from './LanguageContext.js';
 import PrivateRoute from './pages/PrivateRoute';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase.js';
-import { signOut } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import Transaction from './components/Transaction.js';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,40 +21,45 @@ function NavigationListener() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const uid = localStorage.getItem('uid'); // Get UID from local storage
-        if (!uid) {
-            toast.error('User not authenticated. Please log in.');
-            navigate('/');
-            return;
-        }
-
-        const userDocRef = doc(db, 'users', uid);
-
-        // Set up a real-time listener
-        const unsubscribe = onSnapshot(
-            userDocRef,
-            (docSnapshot) => {
-                if (docSnapshot.exists()) {
-                    const userData = docSnapshot.data();
-                    if (userData.isDisabled) {
-                        toast.error('Your account has been disabled. Logging out...');
-                        localStorage.clear(); // Clear all stored data
-                        navigate('/'); // Redirect to login page
-                    }
-                } else {
-                    toast.error('User data not found. Please contact support.');
-                    localStorage.clear();
-                    navigate('/');
-                }
-            },
-            (error) => {
-                console.error('Error listening to user document:', error);
-                toast.error('Error monitoring account status. Please try again later.');
+        const auth = getAuth();
+        let unsubSnapshot = null;
+        const unsubAuth = onAuthStateChanged(auth, (user) => {
+            if (unsubSnapshot) {
+                unsubSnapshot();
+                unsubSnapshot = null;
             }
-        );
+            if (!user) return;
+            const userDocRef = doc(db, 'users', user.uid);
 
-        // Cleanup listener on component unmount
-        return () => unsubscribe();
+            // Set up a real-time listener
+            unsubSnapshot = onSnapshot(
+                userDocRef,
+                (docSnapshot) => {
+                    if (docSnapshot.exists()) {
+                        const userData = docSnapshot.data();
+                        if (userData.isDisabled) {
+                            toast.error('Your account has been disabled. Logging out...');
+                            localStorage.clear(); // Clear all stored data
+                            navigate('/'); // Redirect to login page
+                        }
+                    } else {
+                        toast.error('User data not found. Please contact support.');
+                        localStorage.clear();
+                        navigate('/');
+                    }
+                },
+                (error) => {
+                    console.error('Error listening to user document:', error);
+                    toast.error('Error monitoring account status. Please try again later.');
+                }
+            );
+        });
+
+        // Cleanup listeners on component unmount
+        return () => {
+            unsubAuth();
+            if (unsubSnapshot) unsubSnapshot();
+        };
     }, [navigate]);
 
     return null; // This component only handles side effects
