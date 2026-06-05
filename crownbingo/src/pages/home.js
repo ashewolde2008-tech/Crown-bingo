@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as React from 'react';
 import {
     useEffect,
@@ -607,9 +608,9 @@ export default function Home() {
             const db = getFirestore();
             const userQuery = query(collection(db, 'users'), where('uid', '==', uid));
             const userSnapshot = await getDocs(userQuery);
-            const userData = userSnapshot.docs[0] ? .data();
+            const userData = userSnapshot.docs[0] ?.data();
             console.log(`userData:${userData.adminId}`);
-            if (userData ? .adminId) {
+            if (userData ?.adminId) {
                 // Use the adminID as the document ID
                 const superAgentDocRef = doc(db, 'users', userData.adminId);
                 const superAgentDoc = await getDoc(superAgentDocRef);
@@ -770,7 +771,7 @@ export default function Home() {
     const callNumber = React.useCallback(async () => {
         const availableNumbers = allNumbers.filter(number => {
             const category = number <= 15 ? 'b' : number <= 30 ? 'i' : number <= 45 ? 'n' : number <= 60 ? 'g' : 'o';
-            return !calledNumbers[category] ? .includes(number);
+            return !calledNumbers[category] ?.includes(number);
         });
         if (availableNumbers.length > 0) {
             const randomIndex = Math.floor(Math.random() * availableNumbers.length);
@@ -783,7 +784,7 @@ export default function Home() {
             setLastCalledNumber(randomNumber);
 
             setLastThreeCalledNumbers(prevCalledNumbers => {
-                const updatedNumbers = [randomNumber, ...prevCalledNumbers ? .slice(0, 4)];
+                const updatedNumbers = [randomNumber, ...prevCalledNumbers ?.slice(0, 4)];
                 return updatedNumbers;
             });
             setLastCalledNumbers(prevCalledNumbers => {
@@ -1040,12 +1041,12 @@ export default function Home() {
             setUserPoints(pointsData);
             console.log(pointsSnapshot);
         }
-        console.log(userPoints[0] ? .cahser_percent / 100);
+        console.log(userPoints[0] ?.cahser_percent / 100);
         console.log(betAmount);
 
         // Check if userPoints is defined and has at least one element
         if (userPoints && userPoints.length > 0) {
-            if (betAmount - (betAmount * userPoints[0] ? .casher_percent / 100) < points[0] ? .points) {
+            if (betAmount - (betAmount * userPoints[0] ?.casher_percent / 100) < points[0] ?.points) {
                 console.log('Kiya bingo running .........');
                 toast.success('Game successfully created!');
                 playAudio(77);
@@ -1053,13 +1054,13 @@ export default function Home() {
 
                 setIsGameStarted(true);
                 const uid = localStorage.getItem('uid');
-                const prizeMoney = betAmount * userPoints[0] ? .casher_percent / 100;
+                const prizeMoney = betAmount * userPoints[0] ?.casher_percent / 100;
                 const db = getFirestore();
                 if (uid) {
                     const pointsCollection = collection(db, 'points');
                     const pointsQuery = query(pointsCollection, where('uid', '==', uid));
                     const pointsSnapshot = await getDocs(pointsQuery);
-                    const pointsDoc = pointsSnapshot ? .docs[0];
+                    const pointsDoc = pointsSnapshot ?.docs[0];
                     const currentPoints = pointsDoc.data().points;
                     const updatedPoints = currentPoints - prizeMoney;
                     const userPointsQuery = query(pointsCollection, where('uid', '==', uid));
@@ -1616,7 +1617,7 @@ export default function Home() {
         Dialog onClose = {
             handleCloseHistoryDialog
         }
-        aria - labelledby = "first-dialog-title"
+        aria-labelledby = "first-dialog-title"
         open = {
             openHistoryDialog
         } >
@@ -1632,7 +1633,7 @@ export default function Home() {
         div style = {
             containerStyle
         } > {
-            lastCalledNumbers ? .map((number, index) => ( <
+            lastCalledNumbers ?.map((number, index) => ( <
                 div key = {
                     index
                 }
@@ -1760,7 +1761,7 @@ export default function Home() {
         Dialog onClose = {
             handleCloseHistoryDialog
         }
-        aria - labelledby = "first-dialog-title"
+        aria-labelledby = "first-dialog-title"
         open = {
             openHistoryDialog
         } >
@@ -1776,7 +1777,7 @@ export default function Home() {
         div style = {
             containerStyle
         } > {
-            lastCalledNumbers ? .map((number, index) => ( <
+            lastCalledNumbers ?.map((number, index) => ( <
                 div key = {
                     index
                 }
@@ -1948,7 +1949,7 @@ export default function Home() {
             defaultValue = {
                 3
             }
-            aria - label = "Default"
+            aria-label = "Default"
             valueLabelDisplay = "auto"
             step = {
                 1
@@ -2088,7 +2089,7 @@ export default function Home() {
                 }
             } >
             {
-                (betAmount - betAmount * userPoints[0] ? .casher_percent / 100).toFixed(0)
+                (betAmount - betAmount * userPoints[0] ?.casher_percent / 100).toFixed(0)
             } <
             /Typography> <
             Typography fontSize = {

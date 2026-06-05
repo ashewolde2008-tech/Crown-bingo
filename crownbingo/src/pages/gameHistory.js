@@ -146,7 +146,7 @@ export default function GameHistory() {
             }
         } >
         <
-        Table stickyHeader aria - label = "customized   table" >
+        Table stickyHeader aria-label = "customized   table" >
         <
         TableHead >
         <

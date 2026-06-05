@@ -145,7 +145,7 @@ export default function Transaction() {
         todayEnd.setDate(todayEnd.getDate() + 1);
 
         const todayIncomeTotal = gameHistories
-            .filter((history) => history.date ? .seconds >= todayStart.getTime() / 1000 && history.date ? .seconds < todayEnd.getTime() / 1000)
+            .filter((history) => history.date ?.seconds >= todayStart.getTime() / 1000 && history.date ?.seconds < todayEnd.getTime() / 1000)
             .reduce((acc, curr) => acc + ((curr.betAmount * curr.cahser_percent / 100)), 0);
         setTodayIncome(todayIncomeTotal);
     }, [gameHistories]);
@@ -162,14 +162,14 @@ export default function Transaction() {
     };
 
     const filteredGameHistories = uniqueGameHistories.filter((history) => {
-        const historyDate = dayjs.unix(history.date ? .seconds);
+        const historyDate = dayjs.unix(history.date ?.seconds);
         return historyDate.isAfter(startDate) && historyDate.isBefore(endDate);
     });
 
 
     const sortedGameHistories = [...filteredGameHistories].sort((a, b) => {
-        const dateA = dayjs.unix(a.date ? .seconds);
-        const dateB = dayjs.unix(b.date ? .seconds);
+        const dateA = dayjs.unix(a.date ?.seconds);
+        const dateB = dayjs.unix(b.date ?.seconds);
         return dateB.isAfter(dateA) ? 1 : -1;
     });
     console.log(filteredGameHistories);
@@ -286,7 +286,7 @@ export default function Transaction() {
             }
         } >
         <
-        Table stickyHeader aria - label = "customized table" >
+        Table stickyHeader aria-label = "customized table" >
         <
         TableHead >
         <

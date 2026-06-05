@@ -92,7 +92,7 @@ export default function Dboard() {
             const pointsData = pointsSnapshot.docs.map(doc => doc.data());
             setUserPoints(pointsData);
 
-            const historiesCollection = collection(pointsSnapshot.docs[0] ? .ref, 'histories');
+            const historiesCollection = collection(pointsSnapshot.docs[0] ?.ref, 'histories');
             const historiesSnapshot = await getDocs(historiesCollection);
             const historiesData = historiesSnapshot.docs.map(doc => doc.data());
             setGameHistories(historiesData);
@@ -144,12 +144,12 @@ export default function Dboard() {
         todayEnd.setDate(todayEnd.getDate() + 1);
 
         const todayIncomeTotal = gameHistories
-            .filter((history) => history.date ? .seconds >= todayStart.getTime() / 1000 && history.date ? .seconds < todayEnd.getTime() / 1000)
+            .filter((history) => history.date ?.seconds >= todayStart.getTime() / 1000 && history.date ?.seconds < todayEnd.getTime() / 1000)
             .reduce((acc, curr) => acc + ((curr.betAmount * curr.cahser_percent / 100)), 0);
         setTodayIncome(todayIncomeTotal);
     }, [gameHistories]);
     const uniqueGameHistories = gameHistories.filter(
-        (history, index, self) => index === self.findIndex(h => h.date ? .seconds === history.date ? .seconds && h.betAmount === history.betAmount)
+        (history, index, self) => index === self.findIndex(h => h.date ?.seconds === history.date ?.seconds && h.betAmount === history.betAmount)
     );
 
     const handleStartDateChange = (newDate) => {
@@ -161,7 +161,7 @@ export default function Dboard() {
     };
 
     const filteredGameHistories = uniqueGameHistories.filter((history) => {
-        const historyDateSeconds = history.date ? .seconds;
+        const historyDateSeconds = history.date ?.seconds;
         const startSeconds = startDate.unix();
         const endSeconds = endDate.unix();
         return historyDateSeconds >= startSeconds && historyDateSeconds <= endSeconds;
@@ -256,7 +256,7 @@ export default function Dboard() {
                 18
             } >
             WALLET: {
-                Math.floor(userPoints[0] ? .points)
+                Math.floor(userPoints[0] ?.points)
             } <
             /Typography> <
             /Grid>
@@ -409,7 +409,7 @@ export default function Dboard() {
                         }
                     } >
                     <
-                    Table stickyHeader aria - label = "customized table" >
+                    Table stickyHeader aria-label = "customized table" >
                     <
                     TableHead >
                     <

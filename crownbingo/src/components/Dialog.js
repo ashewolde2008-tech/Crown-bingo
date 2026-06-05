@@ -472,7 +472,7 @@ export default function CustomizedDialogs({
         CustomDialog onClose = {
             handleFirstDialogClose
         }
-        aria - labelledby = "first-dialog-title"
+        aria-labelledby = "first-dialog-title"
         open = {
             firstDialogOpen
         }
@@ -606,7 +606,7 @@ export default function CustomizedDialogs({
         onClose = {
             handleSecondDialogClose
         }
-        aria - labelledby = "second-dialog-title"
+        aria-labelledby = "second-dialog-title"
         open = {
             secondDialogOpen
         }

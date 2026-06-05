@@ -129,7 +129,7 @@ export default function CustomizedTables() {
                 minWidth: '100%'
             }
         }
-        aria - label = "customized table" >
+        aria-label = "customized table" >
         <
         TableHead >
         <
