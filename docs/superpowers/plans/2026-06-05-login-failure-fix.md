@@ -4,6 +4,8 @@
 
 **Goal:** Fix the login failure for users (`crownbingo` player app) and agents (`superagentcrownbingo` agent app) created via the admin panel, and ensure post-login data access (points, history, jackpot) works.
 
+> **CRITICAL FINDING (added 2026-06-05 during Phase 2 smoke test):** The deployed `crownbingo` bundle at `crown-bingo.pages.dev` is stale — it was last deployed from commit `bf49eb4` and still contains the **OLD** Firebase apiKey (`...Or2o` for project `bingo-27d37`, project number `509582453061`). The repo's current `crownbingo/static/js/main.3fbd7db3.js` has the **correct** apiKey (`...S3do` for `bingo-27d37-5661f`). Login fails with `400 Bad Request` from `identitytoolkit.googleapis.com` because the old project no longer accepts auth requests. **Re-deploying the crownbingo directory to Netlify is required** to push the corrected bundle. This is added as **Phase 1.5** below.
+
 **Architecture:** Deploy extended Firestore security rules (the primary blocker), patch legacy Firestore documents missing required role fields, and rebuild the superagent React bundle from its corrected `src/` source. The crownbingo app is not rebuildable from this repo, so its login relies solely on rule deployment.
 
 **Tech Stack:** React 18, Firebase v10 SDK (Web), Firestore, Firebase CLI, Netlify (3 sites), Windows PowerShell.
@@ -307,6 +309,96 @@ git commit -m "feat(rules): add points, history, jackpotHistory, currentJackpot 
 
 Fixes post-login PERMISSION_DENIED errors on player and agent apps."
 ```
+
+---
+
+## Phase 1.5: Re-Deploy Crownbingo (CRITICAL — discovered during smoke test)
+
+The crownbingo player app is a static site that was last deployed from commit `bf49eb4`. The repo's current `crownbingo/static/js/main.3fbd7db3.js` (2,918,239 bytes, apiKey `...S3do`) differs from the live bundle (2,855,866 bytes, apiKey `...Or2o`). Login fails because the live app authenticates against the wrong Firebase project.
+
+The repo's `crownbingo/.netlify/state.json` shows the site is linked to Netlify (siteId `17749eab-218d-4ce8-92ba-04aad958880c`). The Netlify CLI is installed and authenticated.
+
+> **Note:** The live URL `crown-bingo.pages.dev` is a Cloudflare Pages subdomain. Netlify deploys may not update this URL directly. The user must verify after deploy.
+
+### Task 1.5.1: Verify Netlify CLI and Site Link
+
+**Files:** None (read-only)
+
+- [ ] **Step 1: Confirm `netlify --version` works**
+
+```powershell
+netlify --version
+```
+
+Expected: `netlify-cli/X.X.X win32-x64 node-vX.X.X`
+
+- [ ] **Step 2: Verify the crownbingo site is linked**
+
+```powershell
+Get-Content -LiteralPath "crownbingo\.netlify\state.json"
+```
+
+Expected: `{"siteId": "17749eab-218d-4ce8-92ba-04aad958880c"}`
+
+If the siteId differs, stop and report BLOCKED.
+
+### Task 1.5.2: Re-Deploy Crownbingo
+
+**Files:** None (deployment only)
+
+- [ ] **Step 1: Deploy the crownbingo directory to Netlify**
+
+```powershell
+cd crownbingo
+netlify deploy --prod --dir=.
+```
+
+Expected output (truncated):
+```
+Deploying to production site URL...
+✔ Finished hashing 142 files
+✔ CDN requesting 0 files
+✔ Finished uploading 0 assets
+✔ Deploy is live!
+
+Production URL: https://17749eab-218d-4ce8-92ba-04aad958880c.netlify.app
+```
+
+If deploy fails with auth errors, stop and report BLOCKED (do not re-authenticate).
+
+- [ ] **Step 2: Verify the new bundle is served at the live URL**
+
+```powershell
+$liveBundle = (Invoke-WebRequest -Uri "https://crown-bingo.pages.dev/static/js/main.3fbd7db3.js" -UseBasicParsing -TimeoutSec 30).Content
+$or2oCount = ([regex]::Matches($liveBundle, 'Or2o')).Count
+$s3doCount = ([regex]::Matches($liveBundle, 'S3do')).Count
+Write-Output "LIVE bundle: Or2o=$or2oCount, S3do=$s3doCount, length=$($liveBundle.Length)"
+```
+
+Expected: `Or2o=0, S3do=4, length=2918239` (or close — Cloudflare cache may lag a few seconds).
+
+If `Or2o>0` after 5 minutes of waiting, the Cloudflare Pages cache hasn't refreshed. Try a hard refresh in the browser (`Ctrl+Shift+R`) or wait longer.
+
+- [ ] **Step 3: Record the deployment**
+
+```powershell
+"Crownbingo redeployed to Netlify at $(Get-Date -Format o)" | Out-File -FilePath "scratch\crownbingo-redeploy.log" -Append
+```
+
+### Task 1.5.3: Verify Login on Player App (MANUAL)
+
+- [ ] **Step 1: Open the player app with cache-busting**
+
+Open: `https://crown-bingo.pages.dev/?cb=$(Get-Random)`
+
+- [ ] **Step 2: Sign in with a test user**
+
+Expected: 
+- `signInWithEmailAndPassword` succeeds (no 400 Bad Request)
+- Either redirects to home or shows expected error (e.g., "User data not found" if no users doc)
+- **No** `PERMISSION_DENIED` errors in Console
+
+If the 400 Bad Request persists after a hard refresh, the Cloudflare cache is still stale. Wait 5-10 minutes and retry, or purge cache via Cloudflare dashboard.
 
 ---
 
