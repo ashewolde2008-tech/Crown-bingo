@@ -36,9 +36,9 @@ import {
     where,
     getDocs,
     updateDoc,
-    doc,
-    getDoc
+    doc
 } from 'firebase/firestore';
+import { useUser } from '../UserContext.js';
 import {
     LocalizationProvider
 } from '@mui/x-date-pickers/LocalizationProvider';
@@ -74,7 +74,7 @@ const StyledTableRow = styled(TableRow)(({
 }));
 
 export default function Dboard() {
-    const [userPoints, setUserPoints] = useState([]);
+    const { userData } = useUser();
     const [gameHistories, setGameHistories] = useState([]);
     const [selectedPercentage, setSelectedPercentage] = useState(1);
     const [todayIncome, setTodayIncome] = useState(0);
@@ -82,49 +82,33 @@ export default function Dboard() {
     const [endDate, setEndDate] = useState(dayjs().endOf('day'));
     const [open, setOpen] = useState(false); // State for modal
     const [lastCalledNumbers, setLastCalledNumbers] = useState([]);
-    const fetchUserData = async () => {
+
+    const wallet = userData ? (userData.balance ?? 0) : 0;
+
+    const fetchHistories = async () => {
         const db = getFirestore();
         const uid = localStorage.getItem('uid');
-        if (uid) {
-            const pointsCollection = collection(db, 'points');
-            const pointsQuery = query(pointsCollection, where('uid', '==', uid));
-            const pointsSnapshot = await getDocs(pointsQuery);
-            const pointsData = pointsSnapshot.docs.map(doc => doc.data());
-            setUserPoints(pointsData);
-
-            const historiesCollection = collection(pointsSnapshot.docs[0] ?.ref, 'histories');
-            const historiesSnapshot = await getDocs(historiesCollection);
-            const historiesData = historiesSnapshot.docs.map(doc => doc.data());
-            setGameHistories(historiesData);
-
-            const userDoc = pointsSnapshot.docs[0];
-            const userDocRef = doc(db, 'points', userDoc.id);
-            const userDocSnapshot = await getDoc(userDocRef);
-            const userData = userDocSnapshot.data();
-            if (userData && userData.percent !== undefined) {
-                setSelectedPercentage(userData.casher_percent);
-            }
-        }
+        if (!uid) return;
+        const historiesCollection = collection(db, 'users', uid, 'histories');
+        const historiesSnapshot = await getDocs(historiesCollection);
+        const historiesData = historiesSnapshot.docs.map(d => d.data());
+        setGameHistories(historiesData);
     };
 
     useEffect(() => {
-        fetchUserData();
-    }, []);
-
-    const updatePercentage = async (userUid, newPercentage) => {
-        const uid = localStorage.getItem('uid');
-        const db = getFirestore();
-        const pointsCollection = collection(db, 'points');
-        const userQuery = query(pointsCollection, where('uid', '==', uid));
-        const userSnapshot = await getDocs(userQuery);
-
-        if (userSnapshot.empty) {
-            console.log('No user found with the provided UID');
-            return;
+        if (userData) {
+            if (userData.casher_percent !== undefined && userData.casher_percent !== null) {
+                setSelectedPercentage(userData.casher_percent);
+            }
+            fetchHistories();
         }
+    }, [userData]);
 
-        const userDoc = userSnapshot.docs[0];
-        const userDocRef = doc(db, 'points', userDoc.id);
+    const updatePercentage = async (newPercentage) => {
+        const uid = localStorage.getItem('uid');
+        if (!uid) return;
+        const db = getFirestore();
+        const userDocRef = doc(db, 'users', uid);
         await updateDoc(userDocRef, {
             casher_percent: newPercentage
         });
@@ -133,8 +117,7 @@ export default function Dboard() {
     const handlePercentageChange = (event) => {
         const percent = event.target.value;
         setSelectedPercentage(percent);
-        const uid = localStorage.getItem('uid');
-        updatePercentage(uid, percent);
+        updatePercentage(percent);
     };
 
     useEffect(() => {
@@ -256,7 +239,7 @@ export default function Dboard() {
                 18
             } >
             WALLET: {
-                Math.floor(userPoints[0] ?.points)
+                Math.floor(wallet)
             } <
             /Typography> <
             /Grid>

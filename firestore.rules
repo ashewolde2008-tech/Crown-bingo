@@ -8,6 +8,11 @@ service cloud.firestore {
     // ─── Identity & access ────────────────────────────────────────────
     match /users/{userId} {
       allow read, write: if isAuthenticated();
+
+      // Per-user game histories (replaces /points/{id}/histories)
+      match /histories/{historyId} {
+        allow read, write: if isAuthenticated();
+      }
     }
 
     match /agents/{agentId} {

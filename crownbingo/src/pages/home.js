@@ -56,7 +56,8 @@ import {
 import {
     runTransaction,
     writeBatch,
-    doc
+    doc,
+    increment
 } from "firebase/firestore";
 
 import {
@@ -79,6 +80,7 @@ import Select from '@mui/material/Select';
 import {
     enableIndexedDbPersistence
 } from 'firebase/firestore';
+import { useUser } from '../UserContext.js';
 import b1Sound from '../assets/bingosound/b1.mp3';
 import b2Sound from '../assets/bingosound/b2.mp3';
 import b3Sound from '../assets/bingosound/b3.mp3';
@@ -602,6 +604,7 @@ export default function Home() {
     const [superAgentPhone, setSuperAgentPhone] = useState('');
 
     const uid = localStorage.getItem('uid'); // Assuming uid is stored in localStorage
+    const { userData } = useUser();
 
     useEffect(() => {
         const fetchSuperAgent = async () => {
@@ -881,25 +884,6 @@ export default function Home() {
         setGameStarted(false)
 
     };
-    const [userPoints, setUserPoints] = useState([]);
-    useEffect(() => {
-        const fetchUserPoints = async () => {
-            const db = getFirestore();
-
-            const uid = localStorage.getItem('uid');
-            console.log(uid);
-            if (uid) {
-                const pointsCollection = collection(db, 'points');
-                const pointsQuery = query(pointsCollection, where('uid', '==', uid));
-                const pointsSnapshot = await getDocs(pointsQuery);
-                const pointsData = pointsSnapshot.docs.map(doc => doc.data());
-
-                setUserPoints(pointsData);
-            }
-        };
-
-        fetchUserPoints();
-    }, []);
     const [isShuffling, setIsShuffling] = useState(false);
 
 
@@ -1000,107 +984,69 @@ export default function Home() {
 
 
     const handleNewGame = async () => {
-        let points;
         const db = getFirestore();
         const uid = localStorage.getItem('uid');
-        setIsLoading(true)
-        console.log(`Date${Timestamp.now()}`);
-        const userCollectionRef = collection(db, 'users');
-        const userDocQuery = query(userCollectionRef, where('uid', '==', uid));
-        const userDocSnapshot = await getDocs(userDocQuery);
+        setIsLoading(true);
 
-        if (userDocSnapshot.empty) {
-            toast.error('User not found in the database.');
+        if (!uid) {
+            toast.error('User not authenticated. Please log in.');
             setIsLoading(false);
             return;
         }
 
-        const userDoc = userDocSnapshot.docs[0];
-        const userData = userDoc.data();
+        const currentUser = userData;
+        if (!currentUser) {
+            toast.error('User data not available. Please refresh.');
+            setIsLoading(false);
+            return;
+        }
 
         // Phone verification gate removed (per user request 2026-06-05) — see docs/superpowers/crownbingo-phone-verification-removal.md
         // Phone is now optional. The /savePhone page and the PhoneVerificationDialog component
         // are still available, but no longer enforced as a gate to start a new game.
-        // if (!userData.isVerified) {
-        //     // Open the phone verification dialog
-        //     setUserPhone(userData.phone || '');
+        // if (!currentUser.isVerified) {
+        //     setUserPhone(currentUser.phone || '');
         //     setPhoneVerificationDialogOpen(true);
-
-        //     // User must verify their phone number
         //     setIsLoading(false);
         //     return;
         // }
-        if (uid) {
-            const pointsCollection = collection(db, 'points');
-            const pointsQuery = query(pointsCollection, where('uid', '==', uid));
-            const pointsSnapshot = await getDocs(pointsQuery, {
-                source: 'cache'
-            });
-            const pointsData = pointsSnapshot.docs.map(doc => doc.data());
-            points = pointsData;
-            setUserPoints(pointsData);
-            console.log(pointsSnapshot);
-        }
-        console.log(userPoints[0] ?.cahser_percent / 100);
-        console.log(betAmount);
 
-        // Check if userPoints is defined and has at least one element
-        if (userPoints && userPoints.length > 0) {
-            if (betAmount - (betAmount * userPoints[0] ?.casher_percent / 100) < points[0] ?.points) {
-                console.log('Kiya bingo running .........');
-                toast.success('Game successfully created!');
-                playAudio(77);
-                setIsLoading(false)
+        const currentBalance = currentUser.balance || 0;
+        const casherPercent = currentUser.casher_percent || 0;
+        const requiredAmount = betAmount - (betAmount * casherPercent / 100);
 
-                setIsGameStarted(true);
-                const uid = localStorage.getItem('uid');
-                const prizeMoney = betAmount * userPoints[0] ?.casher_percent / 100;
-                const db = getFirestore();
-                if (uid) {
-                    const pointsCollection = collection(db, 'points');
-                    const pointsQuery = query(pointsCollection, where('uid', '==', uid));
-                    const pointsSnapshot = await getDocs(pointsQuery);
-                    const pointsDoc = pointsSnapshot ?.docs[0];
-                    const currentPoints = pointsDoc.data().points;
-                    const updatedPoints = currentPoints - prizeMoney;
-                    const userPointsQuery = query(pointsCollection, where('uid', '==', uid));
-                    const userPointsSnapshot = await getDocs(userPointsQuery);
-                    const userPointsDoc = userPointsSnapshot.docs[0];
-                    await updateDoc(pointsDoc.ref, {
-                        points: updatedPoints
-                    });
-                    console.log(userPointsDoc.exists());
-
-                    // Access the points collection inside the user's document
-                    const pointsRef = userPointsDoc.ref;
-                    const historiesCollection = collection(pointsRef, 'histories');
-                    console.log(historiesCollection);
-                    // Prepare data for the new game
-                    const gameData = {
-                        points: pointsDoc.data().points,
-                        betAmount: betAmount,
-                        cahser_percent: userPointsDoc.data().casher_percent,
-                        date: Timestamp.now(), // Current date
-                        // Add any other fields you want to save
-                    };
-
-                    // Add the new game data to the histories subcollection
-                    await addDoc(historiesCollection, gameData);
-
-                    // Redirect to the desired route
-                    // Replace 'desired-route' with your actual route
-
-                }
-            } else {
-                setIsGameStarted(false);
-                toast.error('Please Update Points and Try Again');
-                alert('You are out of points please update and Try Again');
-            }
-        } else {
-            // Handle the case where userPoints is not defined or empty
-            toast.error('User Points not available')
+        if (currentBalance < requiredAmount) {
+            setIsGameStarted(false);
+            toast.error('Please Update Points and Try Again');
+            alert('You are out of points please update and Try Again');
             setIsLoading(false);
-            console.error('User points are not available.');
+            return;
+        }
+
+        const prizeMoney = betAmount * casherPercent / 100;
+        const userDocRef = doc(db, 'users', uid);
+        const historiesCollection = collection(db, 'users', uid, 'histories');
+
+        try {
+            await updateDoc(userDocRef, {
+                balance: increment(-prizeMoney)
+            });
+
+            await addDoc(historiesCollection, {
+                points: currentBalance - prizeMoney,
+                betAmount: betAmount,
+                cahser_percent: casherPercent,
+                date: Timestamp.now(),
+            });
+
+            toast.success('Game successfully created!');
+            playAudio(77);
+            setIsGameStarted(true);
+        } catch (err) {
+            console.error('Failed to start new game:', err);
+            toast.error('Failed to start game: ' + err.message);
+        } finally {
+            setIsLoading(false);
         }
     }
 

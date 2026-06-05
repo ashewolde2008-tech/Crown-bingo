@@ -19,9 +19,6 @@ import {
     getFirestore,
     collection,
     getDocs,
-    addDoc,
-    query,
-    where,
     updateDoc,
     doc
 } from 'firebase/firestore';
@@ -63,13 +60,13 @@ export default function CustomizedTables() {
         const fetchData = async () => {
             const usersCollection = collection(db, 'users');
             const usersSnapshot = await getDocs(usersCollection);
-            const usersData = usersSnapshot.docs.map(doc => doc.data());
+            const usersData = usersSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             setUsers(usersData);
 
             const initialPointsData = usersData.map(user => ({
                 uid: user.uid,
-                points: '',
-                percent: ''
+                points: user.balance !== undefined ? String(user.balance) : '',
+                casher_percent: user.casher_percent !== undefined ? String(user.casher_percent) : ''
             }));
             setPointsData(initialPointsData);
         };
@@ -91,29 +88,24 @@ export default function CustomizedTables() {
 
     const handleSubmit = async () => {
         try {
-            const updatePromises = [];
-            pointsData.forEach(data => {
-                const pointsRef = collection(db, 'points');
-                const q = query(pointsRef, where('uid', '==', data.uid));
-                updatePromises.push(getDocs(q).then(querySnapshot => {
-                    if (!querySnapshot.empty) {
-                        querySnapshot.forEach(async doc => {
-                            // Get the document reference
-                            const docRef = doc.ref;
-                            // Update the document using updateDoc
-                            await updateDoc(docRef, data);
-                        });
-                    } else {
-                        updatePromises.push(addDoc(pointsRef, data));
+            const updatePromises = pointsData
+                .filter(data => data.points !== '' || data.casher_percent !== '')
+                .map(async (data, index) => {
+                    const userDocId = users[index]?.id;
+                    if (!userDocId) return;
+                    const userDocRef = doc(db, 'users', userDocId);
+                    const update = {};
+                    if (data.points !== '') update.balance = Number(data.points);
+                    if (data.casher_percent !== '') update.casher_percent = Number(data.casher_percent);
+                    if (Object.keys(update).length > 0) {
+                        await updateDoc(userDocRef, update);
                     }
-                }));
-            });
-
+                });
             await Promise.all(updatePromises);
-            toast.success('Points and percent saved successfully');
+            toast.success('Balance and casher percent saved successfully');
         } catch (error) {
-            console.error('Error saving points and percent:', error);
-            toast.error('Failed to save points and percent');
+            console.error('Error saving balance and casher percent:', error);
+            toast.error('Failed to save balance and casher percent');
         }
     };
     console.log(users);
@@ -136,10 +128,10 @@ export default function CustomizedTables() {
         TableRow >
         <
         StyledTableCell > Email < /StyledTableCell> <
-        StyledTableCell > points < /StyledTableCell> <
+        StyledTableCell > Current Balance < /StyledTableCell> <
         StyledTableCell align = "right" > Name < /StyledTableCell> <
-        StyledTableCell align = "right" > Points < /StyledTableCell> <
-        StyledTableCell align = "right" > Percent < /StyledTableCell> <
+        StyledTableCell align = "right" > Balance < /StyledTableCell> <
+        StyledTableCell align = "right" > Casher Percent < /StyledTableCell> <
         /TableRow> <
         /TableHead> <
         TableBody > {
@@ -155,7 +147,7 @@ export default function CustomizedTables() {
                 /StyledTableCell> <
                 StyledTableCell component = "th"
                 scope = "row" > {
-                    user.points
+                    user.balance
                 } <
                 /StyledTableCell> <
                 StyledTableCell align = "right" > {
@@ -176,9 +168,9 @@ export default function CustomizedTables() {
                 StyledTableCell align = "right" >
                 <
                 input type = "text"
-                name = "percent"
+                name = "casher_percent"
                 value = {
-                    pointsData[index].percent || ''
+                    pointsData[index].casher_percent || ''
                 }
                 onChange = {
                     (e) => handleChange(e, index)

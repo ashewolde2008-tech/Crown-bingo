@@ -28,11 +28,9 @@ import {
     getFirestore,
     collection,
     query,
-    where,
     getDocs,
     updateDoc,
-    doc,
-    getDoc
+    doc
 } from 'firebase/firestore';
 import {
     LocalizationProvider
@@ -47,6 +45,7 @@ import dayjs from 'dayjs';
 import {
     onSnapshot
 } from "firebase/firestore";
+import { useUser } from '../UserContext.js';
 
 const StyledTableCell = styled(TableCell)(({
     theme
@@ -72,39 +71,27 @@ const StyledTableRow = styled(TableRow)(({
 }));
 
 export default function Transaction() {
-    const [userPoints, setUserPoints] = useState([]);
+    const { userData } = useUser();
     const [gameHistories, setGameHistories] = useState([]);
     const [selectedPercentage, setSelectedPercentage] = useState(1);
     const [todayIncome, setTodayIncome] = useState(0);
     const [startDate, setStartDate] = useState(dayjs().startOf('day'));
     const [endDate, setEndDate] = useState(dayjs().endOf('day'));
+
     useEffect(() => {
-        const db = getFirestore();
-        const uid = localStorage.getItem('uid');
-        if (uid) {
-            const pointsDoc = doc(db, 'points', uid);
-            onSnapshot(pointsDoc, (docSnapshot) => {
-                if (docSnapshot.exists()) {
-                    const data = docSnapshot.data();
-                    setUserPoints(data.points || []);
-                    setSelectedPercentage(data.casher_percent || 1);
-                }
-            });
+        if (userData && userData.casher_percent !== undefined && userData.casher_percent !== null) {
+            setSelectedPercentage(userData.casher_percent);
         }
-    }, []);
+    }, [userData]);
 
     const fetchUserData = async () => {
         const db = getFirestore();
         const uid = localStorage.getItem('uid');
         if (uid) {
-            const pointsCollection = collection(db, 'history');
-            const pointsQuery = query(pointsCollection, where('userId', '==', uid));
-            const pointsSnapshot = await getDocs(pointsQuery);
-            const pointsData = pointsSnapshot.docs.map(doc => doc.data());
-            setGameHistories(pointsData);
-
-            console.log(pointsData);
-
+            const historiesCollection = collection(db, 'users', uid, 'histories');
+            const historiesSnapshot = await getDocs(historiesCollection);
+            const historiesData = historiesSnapshot.docs.map(d => d.data());
+            setGameHistories(historiesData);
         }
     };
 
@@ -112,20 +99,11 @@ export default function Transaction() {
         fetchUserData();
     }, []);
 
-    const updatePercentage = async (userUid, newPercentage) => {
+    const updatePercentage = async (newPercentage) => {
         const uid = localStorage.getItem('uid');
+        if (!uid) return;
         const db = getFirestore();
-        const pointsCollection = collection(db, 'points');
-        const userQuery = query(pointsCollection, where('uid', '==', uid));
-        const userSnapshot = await getDocs(userQuery);
-
-        if (userSnapshot.empty) {
-            console.log('No user found with the provided UID');
-            return;
-        }
-
-        const userDoc = userSnapshot.docs[0];
-        const userDocRef = doc(db, 'points', userDoc.id);
+        const userDocRef = doc(db, 'users', uid);
         await updateDoc(userDocRef, {
             casher_percent: newPercentage
         });
@@ -134,8 +112,7 @@ export default function Transaction() {
     const handlePercentageChange = (event) => {
         const percent = event.target.value;
         setSelectedPercentage(percent);
-        const uid = localStorage.getItem('uid');
-        updatePercentage(uid, percent);
+        updatePercentage(percent);
     };
 
     useEffect(() => {
