@@ -33,6 +33,13 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // Live jackpot doc: clients read for the live ticker; writes restricted to admin
+    match /jackpots/{jackpotId} {
+      allow read: if isAuthenticated();
+      allow write: if false;  // TODO: tighten to SUPER_ADMIN/SUPER_AGENT custom claim
+    }
+
+    // Legacy top-level currentJackpot collection (kept for any older callers)
     match /currentJackpot {
       allow read, write: if isAuthenticated();
 
