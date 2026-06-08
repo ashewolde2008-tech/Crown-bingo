@@ -1,9 +1,10 @@
+/* Admin-style background for Crown Bingo Login Page */
 .video-bg-container {
-    background-color: #000000;
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
     height: 100vh;
     overflow: hidden;
     position: relative;
-    width: 100%
+    width: 100%;
 }
 
 .video-bg {
@@ -20,36 +21,29 @@
 }
 
 .glow-text {
-    animation: pulsingGlow 2s ease-in-out infinite;
-    color: #623f89;
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 20px;
-    text-align: center
-}
-
-@keyframes pulsingGlow {
-    0%, to {
-        text-shadow: 0 0 10px #bb86fc, 0 0 20px #bb86fc, 0 0 30px #bb86fc, 0 0 40px #bb86fc
-    }
-    50% {
-        text-shadow: 0 0 20px #bb86fc, 0 0 40px #bb86fc, 0 0 60px #bb86fc, 0 0 80px #bb86fc
-    }
+    text-align: center;
+    color: #2c3e50;
 }
 
 .login-top-bar {
     align-items: center;
-    background-color: #000000;
+    background: transparent;
     display: flex;
     height: 56px;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-left: 12px;
     left: 0;
     position: absolute;
     top: 0;
     width: 100%;
-    z-index: 10
+    z-index: 10;
 }
 
 .login-form-wrap {
-    padding-top: 56px
+    padding-top: 56px;
+    position: relative;
+    z-index: 2;
 }

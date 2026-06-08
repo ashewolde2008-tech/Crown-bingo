@@ -1,1 +1,5 @@
-
+.dark-theme-bg {
+    background-color: #1E1E24;
+    min-height: 100vh;
+    color: #ffffff;
+}

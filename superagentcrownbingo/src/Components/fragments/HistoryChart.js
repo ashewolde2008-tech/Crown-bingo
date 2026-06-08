@@ -20,6 +20,7 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
+import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 
 // Register required Chart.js components
@@ -35,6 +36,7 @@ ChartJS.register(
 
 export default function HistoryLineChart() {
     const [historyData, setHistoryData] = useState([]);
+    const [visible, setVisible] = useState(true);
     const adminId = localStorage.getItem('uid');
 
     // Fetch history data from Firestore
@@ -172,22 +174,47 @@ export default function HistoryLineChart() {
     };
 
     return ( <
+        div >
+        <
         div style = {
             {
-                width: '100%',
-                height: '700px',
-                padding: '20px',
-                backgroundColor: '#1e1e1e'
+                display: 'flex',
+                justifyContent: 'flex-end',
+                padding: '10px'
             }
         } >
         <
-        Line data = {
-            chartData
+        Button variant = "contained"
+        color = {
+            visible ? 'primary' : 'secondary'
         }
-        options = {
-            chartOptions
-        }
-        /> <
+        onClick = {
+            () => setVisible(v => !v)
+        } > {
+            visible ? 'Hide Chart' : 'View Chart'
+        } <
+        /Button> <
+        /div> {
+            visible && ( <
+                div style = {
+                    {
+                        width: '100%',
+                        height: '700px',
+                        padding: '20px',
+                        backgroundColor: '#1e1e1e'
+                    }
+                } >
+                <
+                Line data = {
+                    chartData
+                }
+                options = {
+                    chartOptions
+                }
+                /> <
+                /div>
+            )
+        } <
         /div>
     );
 }

@@ -46,3 +46,6 @@ session-ses_*.md
 
 # Local Netlify folder
 .netlify
+
+# Cloudflare wrangler state
+.wrangler/

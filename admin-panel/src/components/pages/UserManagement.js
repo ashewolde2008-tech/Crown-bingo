@@ -21,12 +21,15 @@ import {
     Grid,
     LinearProgress,
     Tooltip,
+    Switch,
+    Divider,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
     Search as SearchIcon,
+    Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
@@ -97,7 +100,7 @@ export default function UserManagement() {
         try {
             setLoading(true);
             const snap = await getDocs(collection(db, 'users'));
-            const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((u) => u.role === 'user');
             setUsers(data);
         } catch (error) {
             toast.error('Error fetching users: ' + error.message);
@@ -142,6 +145,75 @@ export default function UserManagement() {
     const handleCloseDialog = () => {
         setOpenDialog(false);
         formik.resetForm();
+    };
+
+    const handleToggleActive = async (user) => {
+        try {
+            const userRef = doc(db, 'users', user.id);
+            await updateDoc(userRef, { isActive: !user.isActive });
+            toast.success(`User ${!user.isActive ? 'enabled' : 'disabled'}`);
+            fetchUsers();
+        } catch (error) {
+            toast.error('Failed to update status: ' + error.message);
+        }
+    };
+
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [settingsUser, setSettingsUser] = useState(null);
+    const [editUsername, setEditUsername] = useState('');
+    const [editEmail, setEditEmail] = useState('');
+    const [editPhone, setEditPhone] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [settingsLoading, setSettingsLoading] = useState(false);
+
+    const handleOpenSettings = (user) => {
+        setSettingsUser(user);
+        setEditUsername(user.username || '');
+        setEditEmail(user.email || '');
+        setEditPhone(user.phone || '');
+        setNewPassword('');
+        setSettingsOpen(true);
+    };
+
+    const handleCloseSettings = () => {
+        setSettingsOpen(false);
+        setSettingsUser(null);
+        setNewPassword('');
+    };
+
+    const handleSaveSettings = async () => {
+        if (!settingsUser) return;
+        setSettingsLoading(true);
+        try {
+            const userRef = doc(db, 'users', settingsUser.id);
+            await updateDoc(userRef, {
+                username: editUsername,
+                email: editEmail,
+                phone: editPhone,
+            });
+            toast.success('User settings updated');
+            handleCloseSettings();
+            fetchUsers();
+        } catch (error) {
+            toast.error('Failed to save: ' + error.message);
+        } finally {
+            setSettingsLoading(false);
+        }
+    };
+
+    const handleSendPasswordReset = async () => {
+        if (!settingsUser?.email) {
+            toast.error('No email on file for this user');
+            return;
+        }
+        try {
+            const { sendPasswordResetEmail } = await import('firebase/auth');
+            const { auth } = await import('../../firebase');
+            await sendPasswordResetEmail(auth, settingsUser.email);
+            toast.success('Password reset email sent to ' + settingsUser.email);
+        } catch (error) {
+            toast.error('Failed to send reset: ' + error.message);
+        }
     };
 
     const filteredUsers = users.filter((user) =>
@@ -198,12 +270,15 @@ export default function UserManagement() {
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }} align="right">
                                 Actions
                             </TableCell>
+                            <TableCell sx={{ color: '#fff', fontWeight: 700 }} align="right">
+                                Settings
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredUsers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                                     <Typography color="textSecondary">No users found</Typography>
                                 </TableCell>
                             </TableRow>
@@ -221,11 +296,14 @@ export default function UserManagement() {
                                     <TableCell>{user.phone || 'N/A'}</TableCell>
                                     <TableCell>${user.balance || 0}</TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={user.isActive !== false ? 'Active' : 'Inactive'}
-                                            color={user.isActive !== false ? 'success' : 'error'}
-                                            size="small"
+                                        <Switch
+                                            checked={user.isActive !== false}
+                                            onChange={() => handleToggleActive(user)}
+                                            color="success"
                                         />
+                                        <Typography variant="caption" sx={{ ml: 1 }}>
+                                            {user.isActive !== false ? 'Active' : 'Inactive'}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell align="right">
                                         <Tooltip title="Edit">
@@ -244,6 +322,17 @@ export default function UserManagement() {
                                                 sx={{ color: '#e74c3c' }}
                                             >
                                                 <DeleteIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Tooltip title="Edit user settings">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleOpenSettings(user)}
+                                                sx={{ color: '#9b59b6' }}
+                                            >
+                                                <SettingsIcon />
                                             </IconButton>
                                         </Tooltip>
                                     </TableCell>
@@ -323,6 +412,49 @@ export default function UserManagement() {
                         sx={{ background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)' }}
                     >
                         {editingUser ? 'Update' : 'Create'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={settingsOpen} onClose={handleCloseSettings} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ backgroundColor: '#34495e', color: '#fff', fontWeight: 700 }}>
+                    Edit User: {settingsUser?.username || settingsUser?.email}
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                        <TextField
+                            fullWidth label="Username" value={editUsername}
+                            onChange={(e) => setEditUsername(e.target.value)}
+                        />
+                        <TextField
+                            fullWidth label="Email" type="email" value={editEmail}
+                            onChange={(e) => setEditEmail(e.target.value)}
+                        />
+                        <TextField
+                            fullWidth label="Phone" value={editPhone}
+                            onChange={(e) => setEditPhone(e.target.value)}
+                        />
+                        <Divider sx={{ my: 1 }} />
+                        <Typography variant="subtitle1" fontWeight="bold">Reset Password</Typography>
+                        <Button
+                            variant="outlined"
+                            color="warning"
+                            onClick={handleSendPasswordReset}
+                            startIcon={<SettingsIcon />}
+                        >
+                            Send Password Reset Email
+                        </Button>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={handleCloseSettings}>Cancel</Button>
+                    <Button
+                        onClick={handleSaveSettings}
+                        variant="contained"
+                        disabled={settingsLoading}
+                        sx={{ background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)' }}
+                    >
+                        {settingsLoading ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </DialogActions>
             </Dialog>

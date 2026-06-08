@@ -200,7 +200,8 @@ export default function NumberGenerator() {
         style = {
             {
                 height: '100vh',
-                overflowY: 'auto'
+                overflowY: 'auto',
+                backgroundColor: '#1E1E24'
             }
         } >
         <
@@ -357,7 +358,21 @@ export default function NumberGenerator() {
         <
         Typography variant = "h5"
         className = "label"
-        align = "center" > {
+        align = "center"
+        sx = {
+            {
+                color: '#00C853',
+                fontWeight: 'bold',
+                fontSize: { xs: 24, md: 32 },
+                mt: 4,
+                mb: 2,
+                animation: 'greenPulse 2s ease-in-out infinite',
+                '@keyframes greenPulse': {
+                    '0%, 100%': { color: '#00C853', textShadow: '0 0 8px rgba(0, 200, 83, 0.6)' },
+                    '50%': { color: '#76FF03', textShadow: '0 0 16px rgba(118, 255, 3, 0.9)' },
+                },
+            }
+        } > {
             t("Bet Amount")
         } <
         /Typography> <
@@ -480,7 +495,21 @@ export default function NumberGenerator() {
         <
         Typography variant = "h5"
         gutterBottom className = "label"
-        align = "center" > {
+        align = "center"
+        sx = {
+            {
+                color: '#00C853',
+                fontWeight: 'bold',
+                fontSize: { xs: 28, md: 40 },
+                mt: 4,
+                mb: 2,
+                animation: 'greenPulse 2s ease-in-out infinite',
+                '@keyframes greenPulse': {
+                    '0%, 100%': { color: '#00C853', textShadow: '0 0 8px rgba(0, 200, 83, 0.6)' },
+                    '50%': { color: '#76FF03', textShadow: '0 0 16px rgba(118, 255, 3, 0.9)' },
+                },
+            }
+        } > {
             t("Select Cartela")
         } <
         /Typography>

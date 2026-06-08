@@ -25,8 +25,6 @@ const StyledButton = styled(Button)(({
 const CustomBingoText = ({
     children
 }) => {
-    const text = children === 'A' ? 'B' : children === 'B' ? 'B' : children === 'C' ? 'I' : children === 'D' ? 'N' : children === 'E' ? 'G' : 'O';
-
     return ( <
         StyledButton >
         <
@@ -34,7 +32,7 @@ const CustomBingoText = ({
         borderRadius = ".375rem"
         fontWeight = "bold"
         variant = 'h3' > {
-            text
+            children
         } <
         /Typography> <
         /StyledButton>
