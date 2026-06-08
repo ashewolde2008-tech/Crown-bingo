@@ -8,13 +8,11 @@ import {
     Grid,
     Switch,
     FormControlLabel,
-    Alert,
-    LinearProgress,
 } from '@mui/material';
-import { collection, getDocs, setDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { toast } from 'react-toastify';
-import { Save as SaveIcon, Build as BuildIcon } from '@mui/icons-material';
+import { Save as SaveIcon } from '@mui/icons-material';
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState({
@@ -30,8 +28,6 @@ export default function SettingsPage() {
         siteName: 'Crown Bingo',
     });
     const [loading, setLoading] = useState(false);
-    const [patching, setPatching] = useState(false);
-    const [patchLog, setPatchLog] = useState('');
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -66,72 +62,6 @@ export default function SettingsPage() {
             toast.error('Error saving settings: ' + error.message);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const patchMissingRoles = async () => {
-        if (!window.confirm('This will update all existing users/agents missing role fields. Continue?')) return;
-        setPatching(true);
-        setPatchLog('');
-        let fixed = 0;
-        const addLog = (msg) => setPatchLog(prev => prev + '\n' + msg);
-
-        try {
-            addLog('Reading users collection…');
-            const usersSnap = await getDocs(collection(db, 'users'));
-            addLog('Found ' + usersSnap.size + ' user(s).');
-
-            for (const docSnap of usersSnap.docs) {
-                const d = docSnap.data();
-                const updates = {};
-                if (!d.role && !d.userRole) {
-                    updates.role = 'user';
-                    updates.isDisabled = d.isDisabled !== undefined ? d.isDisabled : false;
-                    addLog('  [USER] ' + (d.email || docSnap.id) + ' → role:user');
-                } else if (d.role === 'agent' && !d.userRole) {
-                    updates.userRole = 'superAgent';
-                    updates.isDisabled = d.isDisabled !== undefined ? d.isDisabled : false;
-                    addLog('  [AGENT] ' + (d.email || docSnap.id) + ' → userRole:superAgent');
-                } else {
-                    addLog('  [OK] ' + (d.email || docSnap.id));
-                    continue;
-                }
-                try { await updateDoc(doc(db, 'users', docSnap.id), updates); fixed++; }
-                catch (e) { addLog('  ERROR: ' + e.message); }
-            }
-
-            addLog('\nReading agents collection…');
-            const agentsSnap = await getDocs(collection(db, 'agents'));
-            addLog('Found ' + agentsSnap.size + ' agent(s).');
-
-            for (const agentSnap of agentsSnap.docs) {
-                const d = agentSnap.data();
-                const userRef = doc(db, 'users', agentSnap.id);
-                const userDoc = await getDoc(userRef);
-                if (!userDoc.exists()) {
-                    addLog('  [MISSING] Agent ' + (d.email || agentSnap.id) + ' not in users → adding…');
-                    try {
-                        await setDoc(userRef, { ...d, userRole: 'superAgent', role: 'agent', isDisabled: d.isDisabled ?? false });
-                        fixed++; addLog('  ✅ Done.');
-                    } catch (e) { addLog('  ERROR: ' + e.message); }
-                } else if (!userDoc.data().userRole) {
-                    addLog('  [PATCH] Agent in users missing userRole: ' + (d.email || agentSnap.id));
-                    try {
-                        await updateDoc(userRef, { userRole: 'superAgent', role: 'agent', isDisabled: userDoc.data().isDisabled ?? false });
-                        fixed++;
-                    } catch (e) { addLog('  ERROR: ' + e.message); }
-                } else {
-                    addLog('  [OK] Agent ' + (d.email || agentSnap.id));
-                }
-            }
-
-            addLog('\n✅ PATCH COMPLETE — Fixed ' + fixed + ' record(s)');
-            toast.success('Patch complete! Fixed ' + fixed + ' record(s).');
-        } catch (err) {
-            addLog('\nFATAL: ' + err.message);
-            toast.error('Patch error: ' + err.message);
-        } finally {
-            setPatching(false);
         }
     };
 
