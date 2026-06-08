@@ -5,94 +5,108 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'SUPER_ADMIN';
+    }
+
+    function isSuperAgent() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'super_agent' ||
+        request.auth.token.role == 'SUPER_AGENT'
+      );
+    }
+
+    function isAgent() {
+      return isSuperAdmin() || isSuperAgent();
+    }
+
     // ─── Identity & access ────────────────────────────────────────────
     match /users/{userId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow create: if isAgent();
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAgent());
+      allow delete: if isSuperAdmin();
 
-      // Per-user game histories (replaces /points/{id}/histories)
       match /histories/{historyId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+        allow update, delete: if false;
       }
     }
 
     match /agents/{agentId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isSuperAdmin();
     }
 
     // ─── Player wallet & ledger ───────────────────────────────────────
     match /points/{pointId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && (request.auth.uid == pointId || isAgent());
+      allow write: if false;
 
-      // Per-user bet histories live as a subcollection of the points doc
       match /histories/{historyId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isAgent();
+        allow write: if false;
       }
     }
 
     match /history/{historyId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAgent();
+      allow create: if isAgent();
+      allow update, delete: if false;
     }
 
     // ─── Jackpot ───────────────────────────────────────────────────────
     match /jackpotHistory/{entryId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if false;
     }
 
-    // Live jackpot doc: clients read for the live ticker; writes restricted to admin
     match /jackpots/{jackpotId} {
       allow read: if isAuthenticated();
-      allow write: if false;  // TODO: tighten to SUPER_ADMIN/SUPER_AGENT custom claim
+      allow update: if isAuthenticated();
+      allow create, delete: if false;
     }
 
-    // Legacy top-level currentJackpot collection (kept for any older callers)
     match /currentJackpot {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if false;
 
       match /{document=**} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if false;
       }
     }
 
     // ─── Transactions & games (api/ writes; clients may also read) ────
     match /transactions/{txnId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-                    request.resource.data.amount > 0 &&
-                    request.resource.data.amount <= 10000 &&
-                    request.resource.data.userId == request.auth.uid &&
-                    request.resource.data.status == 'PENDING';
-      allow update: if false;
-      allow delete: if false;
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create, update, delete: if false;
     }
 
     match /games/{gameId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update: if false;
-      allow delete: if false;
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
     }
 
     match /bets/{betId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-                    request.resource.data.userId == request.auth.uid &&
-                    request.resource.data.amount > 0 &&
-                    request.resource.data.amount <= 1000 &&
-                    request.resource.data.gameId != null &&
-                    request.resource.data.status == 'ACTIVE';
-      allow update: if false;
-      allow delete: if false;
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create, update, delete: if false;
     }
 
     // ─── System ────────────────────────────────────────────────────────
     match /settings/{settingId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
     }
 
     match /audit_logs/{logId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update, delete: if false;
+      allow create, update, delete: if false;
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
     }
 
     // ─── Catch-all: deny everything else ──────────────────────────────
