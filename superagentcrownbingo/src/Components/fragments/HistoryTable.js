@@ -61,7 +61,7 @@ export default function HistoryTable() {
     const [open, setOpen] = React.useState(false);
     const [selectedRow, setSelectedRow] = React.useState(null);
     const [historyData, setHistoryData] = React.useState([]);
-    const [startDate, setStartDate] = React.useState(dayjs().startOf('day'));
+    const [startDate, setStartDate] = React.useState(dayjs().subtract(30, 'day').startOf('day'));
     const [endDate, setEndDate] = React.useState(dayjs().endOf('day'));
     const adminId = localStorage.getItem('uid');
 
@@ -91,16 +91,10 @@ export default function HistoryTable() {
     });
 
 
-    // Calculate filtered total house earnings
+    // Calculate filtered total house wallet awarded (points added to user/sub agent wallets)
     const filteredTotalEarnings = filteredHistoryData.filter((item) => item.adminId == adminId).reduce((total, row) => {
-        // Calculate the earnings for the current row
-        const earnings = Math.floor(row.pointsAdded * 100 / row.percent) || 0;
-
-        // Check if earnings is NaN, if so, replace it with 0
-        const validEarnings = isNaN(earnings) ? 0 : earnings;
-
-        // Add the valid earnings to the total
-        return total + validEarnings;
+        const added = Number(row.pointsAdded) || 0;
+        return total + added;
     }, 0);
 
 
@@ -249,8 +243,7 @@ export default function HistoryTable() {
                                 row.percent
                             } < /StyledTableCell> <
                             StyledTableCell align = "right" > {
-                                Math.floor(row.pointsAdded * 100 / row.percent)
-                            } < /StyledTableCell> <
+                                row.pointsAdded} < /StyledTableCell> <
                             StyledTableCell align = "right" > {
                                 row.userName
                             } < /StyledTableCell> <

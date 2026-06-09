@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-    Container,
-    Paper,
-    Typography,
+    Box,
+    Card,
     TextField,
-    Button
+    Button,
+    Typography,
+    Alert,
+    CircularProgress,
+    Container,
 } from '@mui/material';
 import {
     getAuth,
@@ -19,10 +22,8 @@ import {
 } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import {
-    collection,
-    query,
-    where,
-    getDocs
+    doc,
+    getDoc
 } from 'firebase/firestore';
 import {
     db
@@ -30,14 +31,18 @@ import {
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        const auth = getAuth();
-        const email = e.target.username.value;
-        const password = e.target.password.value;
+        setError('');
 
         try {
+            const auth = getAuth();
+
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
@@ -45,17 +50,16 @@ const LoginPage = () => {
             console.log(user.uid);
             localStorage.setItem('uid', user.uid);
 
-            const usersCollection = collection(db, 'users');
-            const usersQuery = query(usersCollection, where('uid', '==', user.uid));
-            const usersSnapshot = await getDocs(usersQuery);
-            if (!usersSnapshot.empty) {
-                const userData = usersSnapshot.docs[0].data();
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
                 const userRole = userData.role;
                 console.log(userData);
 
                 // Only allow access for super agents
-                if (usersSnapshot.docs[0].data().userRole == 'superAgent') {
-                    localStorage.setItem('gametype', usersSnapshot.docs[0].data().gametype);
+                if (userData.userRole == 'superAgent') {
+                    localStorage.setItem('gametype', userData.gametype);
                     console.log(localStorage.getItem('gametype'));
                     // Save the user's authentication token
                     const token = await user.getIdToken();
@@ -66,93 +70,120 @@ const LoginPage = () => {
                     navigate('/Dashboard'); // Redirect to CreateNewGame upon successful login
                 } else {
                     console.error('Unauthorized access. User is not a super agent.');
+                    setError('You do not have super agent access. Contact your administrator.');
                     toast.error('Unauthorized access. User is not a super and agent.');
                 }
             } else {
                 console.error('User data not found.');
+                setError('User data not found.');
                 toast.error('User data not found.');
             }
         } catch (error) {
             console.error('Login failed:', error.message);
+            setError(error.message || 'Login failed');
             toast.error('Login failed: ' + error.message);
         }
     };
 
-
-
-
-    return ( <
-        Container component = "main"
-        maxWidth = "xs"
-        style = {
-            {
-                marginTop: '8vh',
+    return (
+        <Box
+            sx={{
+                minHeight: '100vh',
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
-            }
-        } >
-        <
-        Paper elevation = {
-            3
-        }
-        style = {
-            {
-                padding: '32px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
-            }
-        } >
-        <
-        Typography component = "h1"
-        variant = "h5" >
-        Login <
-        /Typography> <
-        form style = {
-            {
-                width: '100%',
-                marginTop: '16px'
-            }
-        }
-        onSubmit = {
-            handleLogin
-        }
-        noValidate >
-        <
-        TextField variant = "outlined"
-        margin = "normal"
-        required fullWidth id = "username"
-        label = "Username"
-        name = "username"
-        autoComplete = "username"
-        autoFocus /
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)',
+            }}
         >
-        <
-        TextField variant = "outlined"
-        margin = "normal"
-        required fullWidth name = "password"
-        label = "Password"
-        type = "password"
-        id = "password"
-        autoComplete = "current-password" /
-        >
-        <
-        Button type = "submit"
-        fullWidth variant = "contained"
-        color = "primary"
-        style = {
-            {
-                marginTop: '24px'
-            }
-        } >
-        Sign In <
-        /Button> <
-        /form> <
-        /Paper> <
-        ToastContainer / >
-        <
-        /Container>
+            <Container maxWidth="sm">
+                <Card
+                    sx={{
+                        p: 4,
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+                        borderRadius: 2,
+                    }}
+                >
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            textAlign: 'center',
+                            fontWeight: 700,
+                            mb: 1,
+                            color: '#2c3e50',
+                        }}
+                    >
+                        Crown Bingo
+                    </Typography>
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            textAlign: 'center',
+                            mb: 3,
+                            color: '#7f8c8d',
+                        }}
+                    >
+                        Super Agent Login
+                    </Typography>
+
+                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+                    <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <TextField
+                            fullWidth
+                            label="Email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            variant="outlined"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            variant="outlined"
+                        />
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            size="large"
+                            disabled={loading}
+                            sx={{
+                                background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+                                mt: 2,
+                            }}
+                        >
+                            {loading ? (
+                                <>
+                                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                                    Logging in...
+                                </>
+                            ) : (
+                                'Sign In'
+                            )}
+                        </Button>
+                    </Box>
+
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            display: 'block',
+                            textAlign: 'center',
+                            mt: 3,
+                            color: '#7f8c8d',
+                        }}
+                    >
+                        Only super agents can access this panel.
+                        Contact your system administrator for credentials.
+                    </Typography>
+                </Card>
+            </Container>
+            <ToastContainer />
+        </Box>
     );
 };
 

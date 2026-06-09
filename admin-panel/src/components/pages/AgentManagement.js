@@ -21,14 +21,17 @@ import {
     Grid,
     LinearProgress,
     Tooltip,
+    Switch,
+    Divider,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
     Search as SearchIcon,
+    Settings as SettingsIcon,
 } from '@mui/icons-material';
-import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc, increment } from 'firebase/firestore';
 import { db, auth, createUserWithEmailAndPassword } from '../../firebase';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
@@ -51,6 +54,48 @@ export default function AgentManagement() {
     const [openDialog, setOpenDialog] = useState(false);
     const [editingAgent, setEditingAgent] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [rechargeOpen, setRechargeOpen] = useState(false);
+    const [rechargeAgent, setRechargeAgent] = useState(null);
+    const [rechargeAmount, setRechargeAmount] = useState('');
+    const [rechargeLoading, setRechargeLoading] = useState(false);
+
+    const handleRechargeClick = (agent) => {
+        setRechargeAgent(agent);
+        setRechargeAmount('');
+        setRechargeOpen(true);
+    };
+
+    const handleRechargeClose = () => {
+        setRechargeOpen(false);
+        setRechargeAgent(null);
+        setRechargeAmount('');
+    };
+
+    const handleRechargeSubmit = async () => {
+        const amount = Number(rechargeAmount);
+        if (isNaN(amount) || amount <= 0) {
+            toast.error('Enter a valid positive amount');
+            return;
+        }
+        if (!rechargeAgent) return;
+        setRechargeLoading(true);
+        try {
+            // Update users/{agentUid}.balance (primary)
+            const userRef = doc(db, 'users', rechargeAgent.id);
+            await updateDoc(userRef, { balance: increment(amount) });
+            // Also try to update agents/{agentUid}.balance for backwards compat
+            try {
+                await updateDoc(doc(db, 'agents', rechargeAgent.id), { balance: increment(amount) });
+            } catch (e) { /* agents doc may not exist */ }
+            toast.success(`Recharged $${amount} to ${rechargeAgent.agentName || rechargeAgent.email}`);
+            handleRechargeClose();
+            fetchAgents();
+        } catch (error) {
+            toast.error('Recharge failed: ' + error.message);
+        } finally {
+            setRechargeLoading(false);
+        }
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -86,6 +131,7 @@ export default function AgentManagement() {
                         role: 'agent',
                         isActive: true,
                         isDisabled: false,
+                        walletWithdrawEnabled: false,
                         createdAt: new Date().toISOString(),
                         totalSales: 0,
                         totalEarnings: 0
@@ -156,6 +202,85 @@ export default function AgentManagement() {
         formik.resetForm();
     };
 
+    const handleToggleActive = async (agent) => {
+        try {
+            const userRef = doc(db, 'users', agent.id);
+            await updateDoc(userRef, { isActive: !agent.isActive });
+            try {
+                await updateDoc(doc(db, 'agents', agent.id), { isActive: !agent.isActive });
+            } catch (e) { /* may not exist */ }
+            toast.success(`Agent ${!agent.isActive ? 'enabled' : 'disabled'}`);
+            fetchAgents();
+        } catch (error) {
+            toast.error('Failed to update status: ' + error.message);
+        }
+    };
+
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [settingsAgent, setSettingsAgent] = useState(null);
+    const [editAgentName, setEditAgentName] = useState('');
+    const [editAgentCode, setEditAgentCode] = useState('');
+    const [editAgentEmail, setEditAgentEmail] = useState('');
+    const [editAgentPhone, setEditAgentPhone] = useState('');
+    const [editWalletWithdrawEnabled, setEditWalletWithdrawEnabled] = useState(false);
+    const [settingsLoading, setSettingsLoading] = useState(false);
+
+    const handleOpenSettings = (agent) => {
+        setSettingsAgent(agent);
+        setEditAgentName(agent.agentName || '');
+        setEditAgentCode(agent.agentCode || '');
+        setEditAgentEmail(agent.email || '');
+        setEditAgentPhone(agent.phone || '');
+        setEditWalletWithdrawEnabled(agent.walletWithdrawEnabled === true);
+        setSettingsOpen(true);
+    };
+
+    const handleCloseSettings = () => {
+        setSettingsOpen(false);
+        setSettingsAgent(null);
+    };
+
+    const handleSaveAgentSettings = async () => {
+        if (!settingsAgent) return;
+        setSettingsLoading(true);
+        try {
+            const updateData = {
+                agentName: editAgentName,
+                agentCode: editAgentCode,
+                email: editAgentEmail,
+                phone: editAgentPhone,
+                walletWithdrawEnabled: editWalletWithdrawEnabled,
+            };
+            const userRef = doc(db, 'users', settingsAgent.id);
+            await updateDoc(userRef, updateData);
+            try {
+                await updateDoc(doc(db, 'agents', settingsAgent.id), updateData);
+            } catch (e) { /* may not exist */ }
+            toast.success('Agent settings updated');
+            handleCloseSettings();
+            fetchAgents();
+        } catch (error) {
+            toast.error('Failed to save: ' + error.message);
+        } finally {
+            setSettingsLoading(false);
+        }
+    };
+
+    const handleSendAgentPasswordReset = async () => {
+        if (!settingsAgent?.email) {
+            toast.error('No email on file for this agent');
+            return;
+        }
+        try {
+            const { sendPasswordResetEmail } = await import('firebase/auth');
+            const { auth } = await import('../../firebase');
+            await sendPasswordResetEmail(auth, settingsAgent.email);
+            toast.success('Password reset email sent to ' + settingsAgent.email);
+        } catch (error) {
+            toast.error('Failed to send reset: ' + error.message);
+        }
+    };
+
     const filteredAgents = agents.filter((agent) =>
         agent.agentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         agent.agentCode?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -207,16 +332,21 @@ export default function AgentManagement() {
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Email</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Commission %</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Sales</TableCell>
+                            <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Balance</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Status</TableCell>
+                            <TableCell sx={{ color: '#fff', fontWeight: 700 }} align="right">Recharge</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }} align="right">
                                 Actions
+                            </TableCell>
+                            <TableCell sx={{ color: '#fff', fontWeight: 700 }} align="right">
+                                Settings
                             </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredAgents.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
                                     <Typography color="textSecondary">No agents found</Typography>
                                 </TableCell>
                             </TableRow>
@@ -236,12 +366,26 @@ export default function AgentManagement() {
                                     <TableCell>{agent.email || 'N/A'}</TableCell>
                                     <TableCell>{agent.commissionRate || 0}%</TableCell>
                                     <TableCell>{agent.totalSales || 0}</TableCell>
+                                    <TableCell>${agent.balance || 0}</TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={agent.isActive !== false ? 'Active' : 'Inactive'}
-                                            color={agent.isActive !== false ? 'success' : 'error'}
-                                            size="small"
+                                        <Switch
+                                            checked={agent.isActive !== false}
+                                            onChange={() => handleToggleActive(agent)}
+                                            color="success"
                                         />
+                                        <Typography variant="caption" sx={{ ml: 1 }}>
+                                            {agent.isActive !== false ? 'Active' : 'Inactive'}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            onClick={() => handleRechargeClick(agent)}
+                                            sx={{ background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)' }}
+                                        >
+                                            Recharge
+                                        </Button>
                                     </TableCell>
                                     <TableCell align="right">
                                         <Tooltip title="Edit">
@@ -260,6 +404,17 @@ export default function AgentManagement() {
                                                 sx={{ color: '#e74c3c' }}
                                             >
                                                 <DeleteIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Tooltip title="Edit agent settings">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleOpenSettings(agent)}
+                                                sx={{ color: '#9b59b6' }}
+                                            >
+                                                <SettingsIcon />
                                             </IconButton>
                                         </Tooltip>
                                     </TableCell>
@@ -346,6 +501,107 @@ export default function AgentManagement() {
                         sx={{ background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)' }}
                     >
                         {editingAgent ? 'Update' : 'Create'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={rechargeOpen} onClose={handleRechargeClose} maxWidth="xs" fullWidth>
+                <DialogTitle sx={{ backgroundColor: '#34495e', color: '#fff', fontWeight: 700 }}>
+                    Recharge Wallet
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    <Typography sx={{ mb: 2 }}>
+                        Recharging: <b>{rechargeAgent?.agentName || rechargeAgent?.email}</b>
+                    </Typography>
+                    <Typography sx={{ mb: 2, color: 'text.secondary' }}>
+                        Current balance: ${rechargeAgent?.balance || 0}
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        label="Amount"
+                        type="number"
+                        value={rechargeAmount}
+                        onChange={(e) => setRechargeAmount(e.target.value)}
+                        autoFocus
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={handleRechargeClose}>Cancel</Button>
+                    <Button
+                        onClick={handleRechargeSubmit}
+                        variant="contained"
+                        disabled={rechargeLoading}
+                        sx={{ background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)' }}
+                    >
+                        {rechargeLoading ? 'Processing...' : 'Recharge'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={settingsOpen} onClose={handleCloseSettings} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ backgroundColor: '#34495e', color: '#fff', fontWeight: 700 }}>
+                    Edit Agent: {settingsAgent?.agentName || settingsAgent?.email}
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                        <TextField
+                            fullWidth label="Agent Name" value={editAgentName}
+                            onChange={(e) => setEditAgentName(e.target.value)}
+                        />
+                        <TextField
+                            fullWidth label="Agent Code" value={editAgentCode}
+                            onChange={(e) => setEditAgentCode(e.target.value)}
+                        />
+                        <TextField
+                            fullWidth label="Email" type="email" value={editAgentEmail}
+                            onChange={(e) => setEditAgentEmail(e.target.value)}
+                        />
+                        <TextField
+                            fullWidth label="Phone" value={editAgentPhone}
+                            onChange={(e) => setEditAgentPhone(e.target.value)}
+                        />
+                        <Divider sx={{ my: 1 }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: '1px solid rgba(0,0,0,0.12)', borderRadius: 1 }}>
+                            <Box>
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    Wallet Withdraw
+                                </Typography>
+                                <Typography variant="caption" color="textSecondary">
+                                    Allow this agent (super agent) to withdraw from user wallets into their own agent wallet.
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 600, color: editWalletWithdrawEnabled ? 'success.main' : 'text.secondary' }}>
+                                    {editWalletWithdrawEnabled ? 'Enabled' : 'Disabled'}
+                                </Typography>
+                                <Switch
+                                    checked={editWalletWithdrawEnabled}
+                                    onChange={(e) => setEditWalletWithdrawEnabled(e.target.checked)}
+                                    color="success"
+                                />
+                            </Box>
+                        </Box>
+                        <Divider sx={{ my: 1 }} />
+                        <Typography variant="subtitle1" fontWeight="bold">Reset Password</Typography>
+                        <Button
+                            variant="outlined"
+                            color="warning"
+                            onClick={handleSendAgentPasswordReset}
+                            startIcon={<SettingsIcon />}
+                        >
+                            Send Password Reset Email
+                        </Button>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={handleCloseSettings}>Cancel</Button>
+                    <Button
+                        onClick={handleSaveAgentSettings}
+                        variant="contained"
+                        disabled={settingsLoading}
+                        sx={{ background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)' }}
+                    >
+                        {settingsLoading ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </DialogActions>
             </Dialog>

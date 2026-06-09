@@ -14,12 +14,9 @@ import {
 import axios from 'axios';
 import {
     getFirestore,
-    collection,
-    query,
-    where,
-    getDocs,
     updateDoc,
-    doc
+    doc,
+    getDoc
 } from 'firebase/firestore';
 import {
     toast
@@ -44,13 +41,13 @@ const PhoneVerificationDialog = ({
             // Fetch the user's phone number from Firestore
             const fetchUserPhone = async () => {
                 try {
-                    const userQuery = query(collection(db, 'users'), where('uid', '==', uid));
-                    const userSnapshot = await getDocs(userQuery);
-                    if (!userSnapshot.empty) {
-                        const userData = userSnapshot.docs[0].data();
+                    const userDocRef = doc(db, 'users', uid);
+                    const userDoc = await getDoc(userDocRef);
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
                         const fetchedPhone = userData.phone || '';
                         setInitialPhone(fetchedPhone);
-                        setPhone((prevPhone) => prevPhone || fetchedPhone); // Set phone only if it's empty
+                        setPhone((prevPhone) => prevPhone || fetchedPhone);
                     } else {
                         toast.error('User not found.');
                         onClose();
@@ -73,18 +70,6 @@ const PhoneVerificationDialog = ({
 
         setIsLoading(true);
         try {
-            const phoneQuery = query(collection(db, 'users'), where('phone', '==', phone));
-            const phoneSnapshot = await getDocs(phoneQuery);
-
-            if (!phoneSnapshot.empty) {
-                const matchedUser = phoneSnapshot.docs[0].data();
-
-                if (matchedUser.uid !== uid) {
-                    toast.error('This phone number is already in use by another account.');
-                    setIsLoading(false);
-                    return;
-                }
-            }
             const response = await axios.get(
                 `https://api.geezsms.com/api/v1/sms/otp?phone=${phone}&token=kRgU9JzGCll8PT0ZGw1bVQG5YHFax6y5`
             );
@@ -108,12 +93,11 @@ const PhoneVerificationDialog = ({
         if (parseInt(otpCode, 10) === actualCode) {
             toast.success('Phone verified successfully!');
             try {
-                const userQuery = query(collection(db, 'users'), where('uid', '==', uid));
-                const userSnapshot = await getDocs(userQuery);
+                const userDocRef = doc(db, 'users', uid);
+                const userDoc = await getDoc(userDocRef);
 
-                if (!userSnapshot.empty) {
-                    const userDoc = userSnapshot.docs[0];
-                    await updateDoc(doc(db, 'users', userDoc.id), {
+                if (userDoc.exists()) {
+                    await updateDoc(userDocRef, {
                         isVerified: true,
                         phone, // Update phone number if it was edited
                     });

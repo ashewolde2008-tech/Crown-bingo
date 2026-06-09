@@ -183,7 +183,6 @@ import happyGuy from './Happy_man.gif'
 import VegasWheel from './bingo1';
 import BoorioPoker from './bingo2';
 import logo from './logo2.png'
-import SlidableImageComponent from './banner';
 import PhoneVerificationDialog from './phone';
 
 import { db } from '../firebase';
@@ -356,7 +355,7 @@ const BingoNumbers = React.memo(({
                 width = "100%" >
                 <
                 CustomBingoText > {
-                    String.fromCharCode(66 + rowIndex)
+                    ['B', 'I', 'N', 'G', 'O'][rowIndex]
                 } < /CustomBingoText> <
                 Stack direction = "row"
                 width = "100%"
@@ -609,10 +608,10 @@ export default function Home() {
     useEffect(() => {
         const fetchSuperAgent = async () => {
             const db = getFirestore();
-            const userQuery = query(collection(db, 'users'), where('uid', '==', uid));
-            const userSnapshot = await getDocs(userQuery);
-            const userData = userSnapshot.docs[0] ?.data();
-            console.log(`userData:${userData.adminId}`);
+            const userDocRef = doc(db, 'users', uid);
+            const userDoc = await getDoc(userDocRef);
+            const userData = userDoc.exists() ? userDoc.data() : null;
+            console.log(`userData:${userData?.adminId}`);
             if (userData ?.adminId) {
                 // Use the adminID as the document ID
                 const superAgentDocRef = doc(db, 'users', userData.adminId);
@@ -868,11 +867,6 @@ export default function Home() {
         setIsGameStarted(false);
         const uid = localStorage.getItem('uid');
         if (uid) {
-            const db = getFirestore();
-            const pointsCollection = collection(db, 'points');
-            const userPointsQuery = query(pointsCollection, where('uid', '==', uid));
-            const userPointsSnapshot = await getDocs(userPointsQuery);
-            const userPointsDoc = userPointsSnapshot.docs[0];
             playAudio(stopBingo)
 
 
@@ -885,48 +879,6 @@ export default function Home() {
 
     };
     const [isShuffling, setIsShuffling] = useState(false);
-
-
-
-
-    const syncWithFirebase = () => {
-        const cachedData = getCachedData();
-        if (cachedData) {
-            // Update Firebase database with cached data
-            app.database().ref('path/to/data').set(cachedData)
-                .then(() => {
-                    console.log('Data synchronized with Firebase');
-                })
-                .catch(error => {
-                    console.error('Error synchronizing data with Firebase:', error);
-                });
-        }
-    };
-
-    // Function to retrieve cached data from localStorage
-    const getCachedData = () => {
-        const cachedData = localStorage.getItem('cachedData');
-        return cachedData ? JSON.parse(cachedData) : null;
-    };
-
-    // Effect to sync with Firebase when online
-    useEffect(() => {
-        const handleOnline = () => {
-            console.log('Device is back online');
-            syncWithFirebase();
-        };
-
-        window.addEventListener('online', handleOnline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-        };
-    }, []);
-
-    // Initial synchronization with Firebase when the app loads
-    useEffect(() => {
-        syncWithFirebase();
-    }, []);
     const [isToggled, setIsToggled] = useState(false);
     const [isBlink, setIsBlinking] = useState(false);
     const [timeLeft, setTimeLeft] = React.useState('');

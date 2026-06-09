@@ -1,17 +1,16 @@
 import React from 'react';
-import { Container, Paper, Typography, TextField, Button } from '@mui/material';
+import { Paper, Typography, TextField, Button } from '@mui/material';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
-import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
-import TemporaryDrawer from '../components/drawer';
+import './LoginPage.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
 
-    //handles Login
     const handleLogin = async (e) => {
         e.preventDefault();
         const email = e.target.username.value;
@@ -24,29 +23,21 @@ const LoginPage = () => {
             const sessionExpiration = new Date().getTime() + 24 * 60 * 60 * 1000;
             localStorage.setItem('uid', user.uid);
             localStorage.setItem('sessionExpiration', sessionExpiration);
-            const usersCollection = collection(db, 'users');
-            const usersQuery = query(usersCollection, where('uid', '==', user.uid));
-            const usersSnapshot = await getDocs(usersQuery);
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
 
-            if (!usersSnapshot.empty) {
-                const userDoc = usersSnapshot.docs[0];
+            if (userDoc.exists()) {
                 const userData = userDoc.data();
 
-                // Check if the adminId is not equal to the specified ID
                 if (userData.adminId === 'cfIbY9MiWIezaY3tmBJSqW3sgUo1') {
                     toast.error('Admin access required. Contact Support');
                     return;
                 }
 
-                // Check if the user is disabled
                 if (userData.isDisabled) {
                     toast.error('Your account has been disabled. Please contact support.');
                     return;
                 }
-
-
-
-                // Set isLoggedIn to true and proceed with the login
 
                 navigate('/NewGame')
             } else {
@@ -57,17 +48,14 @@ const LoginPage = () => {
         }
     };
 
-    // Function to handle logout and reset isLoggedIn
     const handleLogout = async () => {
         const uid = localStorage.getItem('uid');
         if (uid) {
-            const usersCollection = collection(db, 'users');
-            const usersQuery = query(usersCollection, where('uid', '==', uid));
-            const usersSnapshot = await getDocs(usersQuery);
+            const userDocRef = doc(db, 'users', uid);
+            const userDoc = await getDoc(userDocRef);
 
-            if (!usersSnapshot.empty) {
-                const userDoc = usersSnapshot.docs[0];
-                await updateDoc(userDoc.ref, {
+            if (userDoc.exists()) {
+                await updateDoc(userDocRef, {
                     isLoggedIn: false
                 });
             }
@@ -79,177 +67,160 @@ const LoginPage = () => {
         }
     };
 
-
-    return ( <
-        div className = "video-bg-container" >
-        <
-        div className = "login-top-bar" >
-        <
-        TemporaryDrawer / >
-        <
-        /div>
-
-        <
-        div className = "login-form-wrap"
-        style = {
-            {
-                position: 'relative',
-                zIndex: 2,
-                marginTop: '10vh',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
-            }
-        } >
-        <
-        Container component = "main"
-        maxWidth = "xs"
-        style = {
-            {
-                position: 'relative',
-                zIndex: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                boxShadow: '0 4px 20px rgba(0, 201, 183, 0.6)', // Bluish glow effect
-                borderRadius: '12px'
-            }
-        } >
-        <
-        Typography variant = "h3"
-        className = "glow-text"
-        style = {
-            {
-                marginBottom: '20px',
-                color: '#FFF',
-                fontWeight: 'bold',
-                fontSize: '2.5rem',
-                textAlign: 'center',
-            }
-        } >
-        <
-        /Typography> <
-        Paper elevation = {
-            10
-        }
-        style = {
-            {
-                padding: '40px',
-                borderRadius: '12px',
-                backgroundColor: '#1e1e1e',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                color: '#00c9b7'
-            }
-        } >
-        <
-        Typography style = {
-            {
-                marginBottom: '20px',
-                color: '#17c190'
-            }
-        } >
-        Crown Bingo <
-        /Typography> <
-        Typography component = "h1"
-        variant = "h5"
-        style = {
-            {
-                marginBottom: '20px',
-                color: '#17c190'
-            }
-        } >
-        Login <
-        /Typography> <
-        form style = {
-            {
-                width: '100%'
-            }
-        }
-        onSubmit = {
-            handleLogin
-        }
-        noValidate >
-        <
-        TextField variant = "outlined"
-        margin = "normal"
-        required fullWidth id = "username"
-        label = "Username"
-        name = "username"
-        autoComplete = "username"
-        autoFocus InputProps = {
-            {
-                style: {
-                    color: '#e0e0e0'
-                },
-            }
-        }
-        InputLabelProps = {
-            {
-                style: {
-                    color: '#bb86fc'
-                },
-            }
-        }
-        style = {
-            {
-                marginBottom: '20px',
-                backgroundColor: '#2a2a2a',
-                borderRadius: '5px'
-            }
-        }
-        /> <
-        TextField variant = "outlined"
-        margin = "normal"
-        required fullWidth name = "password"
-        label = "Password"
-        type = "password"
-        id = "password"
-        autoComplete = "current-password"
-        InputProps = {
-            {
-                style: {
-                    color: '#e0e0e0'
-                },
-            }
-        }
-        InputLabelProps = {
-            {
-                style: {
-                    color: '#bb86fc'
-                },
-            }
-        }
-        style = {
-            {
-                marginBottom: '20px',
-                backgroundColor: '#2a2a2a',
-                borderRadius: '5px'
-            }
-        }
-        /> <
-        Button type = "submit"
-        fullWidth variant = "contained"
-        style = {
-            {
-                marginTop: '24px',
-                backgroundColor: '#17c190',
-                color: '#fff',
-                padding: '10px',
-                borderRadius: '8px',
-                fontWeight: 'bold'
-            }
-        } >
-        Sign In <
-        /Button> <
-        /form> <
-        /Paper> <
-        ToastContainer / >
-        <
-        /Container> <
-        /div> <
-        /div>
+    return (
+        <div className="video-bg-container">
+            <div
+                className="login-form-wrap"
+                style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <Paper
+                    elevation={3}
+                    style={{
+                        padding: '40px',
+                        borderRadius: '12px',
+                        backgroundColor: '#ffffff',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        color: '#2c3e50',
+                        width: '100%',
+                        maxWidth: '420px',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+                    }}
+                >
+                    <Typography
+                        variant="h3"
+                        style={{
+                            marginBottom: '10px',
+                            color: '#2c3e50',
+                            fontWeight: 700,
+                            fontSize: '2.2rem',
+                            textAlign: 'center',
+                        }}
+                    >
+                        Crown Bingo
+                    </Typography>
+                    <Typography
+                        variant="body2"
+                        style={{
+                            marginBottom: '20px',
+                            color: '#7f8c8d',
+                            textAlign: 'center',
+                            fontSize: '1rem',
+                        }}
+                    >
+                        Login
+                    </Typography>
+                    <form
+                        style={{ width: '100%' }}
+                        onSubmit={handleLogin}
+                        noValidate
+                    >
+                        <TextField
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="username"
+                            label="Username"
+                            name="username"
+                            autoComplete="username"
+                            autoFocus
+                            InputProps={{
+                                style: { color: '#2c3e50' },
+                            }}
+                            InputLabelProps={{
+                                style: { color: '#7f8c8d' },
+                            }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: '#bdc3c7',
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: '#3498db',
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: '#2c3e50',
+                                    },
+                                },
+                                '& .MuiInputLabel-root.Mui-focused': {
+                                    color: '#2c3e50',
+                                },
+                            }}
+                            style={{
+                                marginBottom: '20px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '5px'
+                            }}
+                        />
+                        <TextField
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type="password"
+                            id="password"
+                            autoComplete="current-password"
+                            InputProps={{
+                                style: { color: '#2c3e50' },
+                            }}
+                            InputLabelProps={{
+                                style: { color: '#7f8c8d' },
+                            }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: '#bdc3c7',
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: '#3498db',
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: '#2c3e50',
+                                    },
+                                },
+                                '& .MuiInputLabel-root.Mui-focused': {
+                                    color: '#2c3e50',
+                                },
+                            }}
+                            style={{
+                                marginBottom: '20px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '5px'
+                            }}
+                        />
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            size="large"
+                            style={{
+                                marginTop: '16px',
+                                background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+                                color: '#ffffff',
+                                padding: '12px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            Sign In
+                        </Button>
+                    </form>
+                </Paper>
+                <ToastContainer />
+            </div>
+        </div>
     );
 };
 

@@ -10,7 +10,7 @@ import Crown5 from './banner27.jpg';
 import Crown6 from './banner28.jpg';
 import Crown7 from './banner29.jpg';
 import Crown8 from './banner30.jpg';
-import Crown9 from './banner31.png';
+import Crown9 from './banner31.jpg';
 
 
 import './carousel.css'; // Ensure to import the CSS for styling
