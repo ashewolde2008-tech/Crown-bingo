@@ -15,7 +15,6 @@ import {
     DialogContent,
     DialogActions,
     IconButton,
-    Chip,
     Typography,
     Paper,
     Grid,
@@ -163,7 +162,6 @@ export default function UserManagement() {
     const [editUsername, setEditUsername] = useState('');
     const [editEmail, setEditEmail] = useState('');
     const [editPhone, setEditPhone] = useState('');
-    const [newPassword, setNewPassword] = useState('');
     const [settingsLoading, setSettingsLoading] = useState(false);
 
     const handleOpenSettings = (user) => {
@@ -171,14 +169,12 @@ export default function UserManagement() {
         setEditUsername(user.username || '');
         setEditEmail(user.email || '');
         setEditPhone(user.phone || '');
-        setNewPassword('');
         setSettingsOpen(true);
     };
 
     const handleCloseSettings = () => {
         setSettingsOpen(false);
         setSettingsUser(null);
-        setNewPassword('');
     };
 
     const handleSaveSettings = async () => {
