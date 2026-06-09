@@ -16,12 +16,10 @@ jobs:
       run:
         working-directory: api
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: api/package-lock.json
+          node-version: '22'
       - run: npm ci
       - run: node -e "require('./middleware/auth'); require('./middleware/rateLimit'); require('./middleware/validate'); require('./middleware/cors'); console.log('All modules loaded successfully')"
 
@@ -29,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
       - run: npm install -g firebase-tools
       - run: firebase deploy --only firestore:rules,firestore:indexes
         env:
@@ -52,10 +50,10 @@ jobs:
           - name: crown-bingo-admin
             dir: admin-panel
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
       - run: npm ci --legacy-peer-deps
         working-directory: ${{ matrix.app.dir }}
       - run: npm run build
