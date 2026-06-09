@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  CLOUDFLARE_ACCOUNT_ID: 43c18a1cb7ff7a55f2e0859a3b65aa48
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -35,7 +38,40 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
-  deploy:
+  deploy-pages:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    strategy:
+      matrix:
+        app:
+          - name: crown-bingo
+            dir: crownbingo
+          - name: crown-bingo-super-agent
+            dir: superagentcrownbingo
+          - name: crown-bingo-admin
+            dir: admin-panel
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.app.dir }}/package-lock.json
+      - run: npm ci
+        working-directory: ${{ matrix.app.dir }}
+      - run: npm run build
+        working-directory: ${{ matrix.app.dir }}
+      - name: Deploy to Cloudflare Pages
+        run: |
+          npx wrangler pages deploy build \
+            --project-name ${{ matrix.app.name }} \
+            --branch main
+        working-directory: ${{ matrix.app.dir }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  deploy-render:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
