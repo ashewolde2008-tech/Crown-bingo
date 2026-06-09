@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Deploy to Render
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
@@ -80,3 +80,28 @@ jobs:
           if [ -n "$RENDER_DEPLOY_HOOK" ]; then
             curl -X POST "$RENDER_DEPLOY_HOOK"
           fi
+
+  disable-auto-build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    strategy:
+      matrix:
+        project: [crown-bingo, crown-bingo-super-agent, crown-bingo-admin]
+    steps:
+      - name: Disable Cloudflare Pages auto-build
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          curl -X PATCH "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/${{ matrix.project }}" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "source": {
+                "config": {
+                  "deployments_enabled": false,
+                  "production_deployments_enabled": false,
+                  "preview_deployment_setting": "none"
+                }
+              }
+            }'
