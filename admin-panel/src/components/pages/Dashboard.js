@@ -58,8 +58,11 @@ export default function AdminDashboard() {
             try {
                 // Fetch users count
                 const usersSnap = await getDocs(collection(db, 'users'));
-                const totalUsers = usersSnap.docs.length;
-                const activeUsers = usersSnap.docs.filter(
+                const userDocs = usersSnap.docs.filter(
+                    (doc) => doc.data().role === 'user'
+                );
+                const totalUsers = userDocs.length;
+                const activeUsers = userDocs.filter(
                     (doc) => doc.data().isActive !== false
                 ).length;
 
