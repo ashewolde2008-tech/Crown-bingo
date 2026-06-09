@@ -9,21 +9,18 @@ import {
 import {
     doc,
     getDoc,
-    updateDoc,
-    onSnapshot
+    updateDoc
 } from "firebase/firestore";
 
 import {
     styled
 } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import {
     Box,
     Stack,
@@ -34,12 +31,9 @@ import {
 } from 'react-toastify';
 import Confetti from 'react-confetti';
 import useTranslation from '../pages/useTranslation';
-import axios from 'axios';
-import bingoSound from '../pages/goodBingo.mp3'
 import {
     playAudio
 } from '../pages/PlayAudio';
-import WinnerPopup from './jackpot';
 import CloseIcon from '@mui/icons-material/Close';
 
 const CustomDialog = styled(Dialog)(({
@@ -57,7 +51,6 @@ const CustomDialog = styled(Dialog)(({
         backgroundColor: 'transparent',
     },
 }));
-const audioFile = [];
 export default function CustomizedDialogs({
     calledNumbers,
     cards,
@@ -65,7 +58,6 @@ export default function CustomizedDialogs({
     unlockAllNumbers
 }) {
     const [selectedCard, setSelectedCard] = useState(null);
-    const [isBingo, setIsBingo] = useState(false)
     const [inputNumber, setInputNumber] = useState('');
     const [firstDialogOpen, setFirstDialogOpen] = useState(false);
     const [secondDialogOpen, setSecondDialogOpen] = useState(false);
@@ -80,13 +72,9 @@ export default function CustomizedDialogs({
     const [isCartelaAv, setIsCartelaAv] = useState(false);
     const [winnerId, setWinnerId] = useState(null); // Winner ID fetched from Firestore
     const uid = localStorage.getItem('uid'); // Get UID from local storage
-    const [isJack, setisjack] = useState(false); // Winner ID fetched from Firestore
     const [isClaimed, setIsClaimed] = useState(false);
     const [isPopupShown, setIsPopupShown] = useState(false); // Track popup display status
-    const [popupVisible, setPopupVisible] = useState(false);
     const [isPageCovered, setIsPageCovered] = useState(false);
-    const [isPageCovered1, setIsPageCovered1] = useState(false);
-
     const [prizeAmount, setPrizeAmount] = useState(0);
 
     // State to control the page-covering effect
@@ -125,7 +113,6 @@ export default function CustomizedDialogs({
         // Check if popup should be shown
         // Check if popup should be shown
         if (uid === winnerId && isClaimed && !isPopupShown) {
-            setPopupVisible(true);
 
             // Update Firestore to set `isPopupShown` to true
             const updatePopupShown = async () => {
@@ -142,10 +129,6 @@ export default function CustomizedDialogs({
 
             updatePopupShown();
         }
-    };
-
-    const handleInputChange = (event) => {
-        setInputNumber(event.target.value);
     };
 
     const handleCardSearch = () => {
@@ -316,33 +299,6 @@ export default function CustomizedDialogs({
     const handleClosePageCover = () => {
         setIsPageCovered(false); // Hide the full-page message
     };
-    useEffect(() => {
-        const listenToJackpot = () => {
-            const jackpotRef = doc(db, "jackpots", "currentJackpot");
-
-            const unsubscribe = onSnapshot(jackpotRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.data();
-                    const hasJackpotBeenClaimed = data.isClaimed;
-                    const winnerUid = data.winnerId;
-
-                    // Trigger confetti for non-winners
-                    if (hasJackpotBeenClaimed && uid !== winnerUid) {
-                        setIsPageCovered1(true); // Show confetti
-                        setTimeout(() => setIsPageCovered1(false), 5000); // Hide confetti after 5 seconds
-                    }
-                }
-            });
-
-            return unsubscribe; // Clean up the listener
-        };
-
-        const unsubscribeJackpotListener = listenToJackpot();
-
-        return () => {
-            unsubscribeJackpotListener(); // Clean up the listener when component unmounts
-        };
-    }, [uid]);
     return ( <
         >
 

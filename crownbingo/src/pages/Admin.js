@@ -6,7 +6,6 @@ import {
     Paper,
     Grid
 } from '@mui/material';
-import CustomizedTables from '../components/UsersTable';
 
 const AdminPage = () => {
     return ( <

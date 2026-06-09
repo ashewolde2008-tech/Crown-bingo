@@ -4,7 +4,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import './LoginPage.css';
 
@@ -45,25 +45,6 @@ const LoginPage = () => {
             }
         } catch (error) {
             toast.error('Login failed: ' + error.message);
-        }
-    };
-
-    const handleLogout = async () => {
-        const uid = localStorage.getItem('uid');
-        if (uid) {
-            const userDocRef = doc(db, 'users', uid);
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                await updateDoc(userDocRef, {
-                    isLoggedIn: false
-                });
-            }
-
-            localStorage.removeItem('uid');
-            auth.signOut();
-            toast.info('You have been logged out');
-            navigate('/login');
         }
     };
 

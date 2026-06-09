@@ -17,35 +17,17 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import {
     Typography,
-    TextField,
     Stack,
-    Grid,
-    Select,
-    MenuItem
+    Grid
 } from '@mui/material';
 import TemporaryDrawer from '../components/drawer';
 import {
     getFirestore,
     collection,
-    query,
-    getDocs,
-    updateDoc,
-    doc
+    getDocs
 } from 'firebase/firestore';
-import {
-    LocalizationProvider
-} from '@mui/x-date-pickers/LocalizationProvider';
-import {
-    AdapterDayjs
-} from '@mui/x-date-pickers/AdapterDayjs';
-import {
-    DatePicker
-} from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import {
-    onSnapshot
-} from "firebase/firestore";
-import { useUser } from '../UserContext.js';
+
 
 const StyledTableCell = styled(TableCell)(({
     theme
@@ -71,18 +53,9 @@ const StyledTableRow = styled(TableRow)(({
 }));
 
 export default function Transaction() {
-    const { userData } = useUser();
     const [gameHistories, setGameHistories] = useState([]);
-    const [selectedPercentage, setSelectedPercentage] = useState(1);
-    const [todayIncome, setTodayIncome] = useState(0);
-    const [startDate, setStartDate] = useState(dayjs().startOf('day'));
-    const [endDate, setEndDate] = useState(dayjs().endOf('day'));
-
-    useEffect(() => {
-        if (userData && userData.casher_percent !== undefined && userData.casher_percent !== null) {
-            setSelectedPercentage(userData.casher_percent);
-        }
-    }, [userData]);
+    const [startDate] = useState(dayjs().startOf('day'));
+    const [endDate] = useState(dayjs().endOf('day'));
 
     const fetchUserData = async () => {
         const db = getFirestore();
@@ -99,64 +72,33 @@ export default function Transaction() {
         fetchUserData();
     }, []);
 
-    const updatePercentage = async (newPercentage) => {
-        const uid = localStorage.getItem('uid');
-        if (!uid) return;
-        const db = getFirestore();
-        const userDocRef = doc(db, 'users', uid);
-        await updateDoc(userDocRef, {
-            casher_percent: newPercentage
-        });
-    };
-
-    const handlePercentageChange = (event) => {
-        const percent = event.target.value;
-        setSelectedPercentage(percent);
-        updatePercentage(percent);
-    };
-
     useEffect(() => {
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayEnd = new Date(todayStart);
         todayEnd.setDate(todayEnd.getDate() + 1);
 
-        const todayIncomeTotal = gameHistories
-            .filter((history) => history.date ?.seconds >= todayStart.getTime() / 1000 && history.date ?.seconds < todayEnd.getTime() / 1000)
+        gameHistories
+            .filter((history) => history.date.seconds >= todayStart.getTime() / 1000 && history.date.seconds < todayEnd.getTime() / 1000)
             .reduce((acc, curr) => acc + ((curr.betAmount * curr.cahser_percent / 100)), 0);
-        setTodayIncome(todayIncomeTotal);
+    
     }, [gameHistories]);
     const uniqueGameHistories = gameHistories.filter(
         (history, index, self) => index === self.findIndex(h => h.date.seconds === history.date.seconds && h.betAmount === history.betAmount)
     );
 
-    const handleStartDateChange = (newDate) => {
-        setStartDate(newDate.startOf('day'));
-    };
-
-    const handleEndDateChange = (newDate) => {
-        setEndDate(newDate.endOf('day'));
-    };
-
     const filteredGameHistories = uniqueGameHistories.filter((history) => {
-        const historyDate = dayjs.unix(history.date ?.seconds);
+        const historyDate = dayjs.unix(history.date.seconds);
         return historyDate.isAfter(startDate) && historyDate.isBefore(endDate);
     });
 
 
     const sortedGameHistories = [...filteredGameHistories].sort((a, b) => {
-        const dateA = dayjs.unix(a.date ?.seconds);
-        const dateB = dayjs.unix(b.date ?.seconds);
+        const dateA = dayjs.unix(a.date.seconds);
+        const dateB = dayjs.unix(b.date.seconds);
         return dateB.isAfter(dateA) ? 1 : -1;
     });
     console.log(filteredGameHistories);
-    // Calculate filtered total house earnings
-    const filteredTotalHouseEarnings = filteredGameHistories.reduce(
-        (acc, curr) => acc + ((parseFloat(curr.betAmount) * parseFloat(curr.cahser_percent) / 100)),
-        0
-    );
-
-
 
     return ( <
         Stack sx = {

@@ -2,16 +2,11 @@
 import * as React from 'react';
 import {
     useEffect,
-    useState,
-    useRef,
-    useCallback
+    useState
 } from 'react';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import Brightness5Icon from '@mui/icons-material/Brightness5';
 import {
@@ -19,170 +14,46 @@ import {
     Stack,
     Button,
     Slider,
-    Divider,
     CircularProgress
 } from '@mui/material';
-import BasicSelect from '../components/dropdown';
-import {
-    styled,
-    keyframes
-} from '@mui/material/styles';
-import CustomButton from '../components/customButton';
+import { styled } from '@mui/material/styles';
 import CustomBingoText from '../components/customBingoText';
 import TemporaryDrawer from '../components/drawer';
 import cards from '../constant/constant';
 import CustomizedDialogs from '../components/Dialog';
-import {
-    useLocation,
-    useNavigate
-} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     useParams
 } from 'react-router-dom';
-import gifImage from './Wallet.gif';
 import './money.css'
-import axios from 'axios';
 import {
-    arrayUnion,
     getFirestore,
     collection,
-    query,
-    where,
-    getDocs,
     updateDoc,
     Timestamp,
     getDoc
 } from 'firebase/firestore';
-import {
-    runTransaction,
-    writeBatch,
-    doc,
-    increment
-} from "firebase/firestore";
+import { doc, increment } from "firebase/firestore";
 
-import {
-    toast
-} from 'react-toastify';
-import {
-    ToastContainer
-} from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {
-    addDoc,
-    serverTimestamp
-} from 'firebase/firestore';
-import TextToSpeech from '../components/texttoSpeech';
-import BingoTable from '../components/table';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
+import { addDoc } from 'firebase/firestore';
 import {
     enableIndexedDbPersistence
 } from 'firebase/firestore';
 import { useUser } from '../UserContext.js';
-import b1Sound from '../assets/bingosound/b1.mp3';
-import b2Sound from '../assets/bingosound/b2.mp3';
-import b3Sound from '../assets/bingosound/b3.mp3';
-import b4Sound from '../assets/bingosound/b4.mp3';
-import b5Sound from '../assets/bingosound/b5.mp3';
-import b6Sound from '../assets/bingosound/b6.mp3';
-import b7Sound from '../assets/bingosound/b7.mp3';
-import b8Sound from '../assets/bingosound/b8.mp3';
-import b9Sound from '../assets/bingosound/b9.mp3';
-import b10Sound from '../assets/bingosound/b10.mp3';
-import b11Sound from '../assets/bingosound/b11.mp3';
-import b12Sound from '../assets/bingosound/b12.mp3';
-import b13Sound from '../assets/bingosound/b13.mp3';
-import b14Sound from '../assets/bingosound/b14.mp3';
-import b15Sound from '../assets/bingosound/b15.mp3';
-import b16Sound from '../assets/bingosound/b16.mp3';
-import b17Sound from '../assets/bingosound/b17.mp3';
-import b18Sound from '../assets/bingosound/b18.mp3';
-import b19Sound from '../assets/bingosound/b19.mp3';
-import b20Sound from '../assets/bingosound/b20.mp3';
-import b21Sound from '../assets/bingosound/b21.mp3';
-import b22Sound from '../assets/bingosound/b22.mp3';
-import b23Sound from '../assets/bingosound/b23.mp3';
-import b24Sound from '../assets/bingosound/b24.mp3';
-import b25Sound from '../assets/bingosound/b25.mp3';
-import b26Sound from '../assets/bingosound/b26.mp3';
-import b27Sound from '../assets/bingosound/b27.mp3';
-import b28Sound from '../assets/bingosound/b28.mp3';
-import b29Sound from '../assets/bingosound/b29.mp3';
-import b30Sound from '../assets/bingosound/b30.mp3';
-import b31Sound from '../assets/bingosound/b31.mp3';
-import b32Sound from '../assets/bingosound/b32.mp3';
-import b33Sound from '../assets/bingosound/b33.mp3';
-import b34Sound from '../assets/bingosound/b34.mp3';
-import b35Sound from '../assets/bingosound/b35.mp3';
-import b36Sound from '../assets/bingosound/b36.mp3';
-import b37Sound from '../assets/bingosound/b37.mp3';
-import b38Sound from '../assets/bingosound/b38.mp3';
-import b39Sound from '../assets/bingosound/b39.mp3';
-import b40Sound from '../assets/bingosound/b40.mp3';
-import b41Sound from '../assets/bingosound/b41.mp3';
-import b42Sound from '../assets/bingosound/b42.mp3';
-import b43Sound from '../assets/bingosound/b43.mp3';
-import b44Sound from '../assets/bingosound/b44.mp3';
-import b45Sound from '../assets/bingosound/b45.mp3';
-import b46Sound from '../assets/bingosound/b46.mp3';
-import b47Sound from '../assets/bingosound/b47.mp3';
-import b48Sound from '../assets/bingosound/b48.mp3';
-import b49Sound from '../assets/bingosound/b49.mp3';
-import b50Sound from '../assets/bingosound/b50.mp3';
-import b51Sound from '../assets/bingosound/b51.mp3';
-import b52Sound from '../assets/bingosound/b52.mp3';
-import b54Sound from '../assets/bingosound/b54.mp3';
-import b55Sound from '../assets/bingosound/b55.mp3';
-import b56Sound from '../assets/bingosound/b56.mp3';
-import b57Sound from '../assets/bingosound/b57.mp3';
-import b58Sound from '../assets/bingosound/b58.mp3';
-import b59Sound from '../assets/bingosound/b59.mp3';
-import b60Sound from '../assets/bingosound/b60.mp3';
-import b61Sound from '../assets/bingosound/b61.mp3';
-import b62Sound from '../assets/bingosound/b62.mp3';
-import b63Sound from '../assets/bingosound/b63.mp3';
-import b64Sound from '../assets/bingosound/b64.mp3';
-import b65Sound from '../assets/bingosound/b65.mp3';
-import b66Sound from '../assets/bingosound/b66.mp3';
-import b67Sound from '../assets/bingosound/b67.mp3';
-import b68Sound from '../assets/bingosound/b68.mp3';
-import b69Sound from '../assets/bingosound/b69.mp3';
-import b70Sound from '../assets/bingosound/b70.mp3';
-import b71Sound from '../assets/bingosound/b71.mp3';
-import b72Sound from '../assets/bingosound/b72.mp3';
-import b73Sound from '../assets/bingosound/b73.mp3';
-import b74Sound from '../assets/bingosound/b74.mp3';
-import b75Sound from '../assets/bingosound/b75.mp3';
-import b53Sound from '../assets/bingosound/b53.mp3';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import {
-    Grid4x4
-} from '@mui/icons-material';
-import bingo from './bingo.mp3'
 import stopBingo from './stop.mp3'
-import shuf from './shuffle.mp3'
-import {
-    Howl,
-    Howler
-} from 'howler';
+
 import {
     playAudio
 } from './PlayAudio'
-import AnimatedBackground from './anim';
 import './style.css'
-import bgimg from './ad.png'
-import cashImg from './cash.png'
 import LanguageSelector from './LanguageSelector';
 import useTranslation from './useTranslation';
-import gif from './k.gif'
-import happyGuy from './Happy_man.gif'
 import VegasWheel from './bingo1';
 import BoorioPoker from './bingo2';
-import logo from './logo2.png'
 import PhoneVerificationDialog from './phone';
 
 import { db } from '../firebase';
@@ -200,19 +71,6 @@ enableIndexedDbPersistence(db)
     });
 
 
-const sizeAnimation = keyframes `
-  from {
-    font-size: 80px;
-  }
-  to {
-    font-size: 100px;
-  }
-`;
-const blink = keyframes `
-  50% {
-    opacity: 0;
-  }
-`;
 const style = document.createElement('style');
 style.innerHTML = `
   .toggle-color {
@@ -245,37 +103,6 @@ const LastCalledNumberContainer = styled(Stack)({
 
 });
 
-const LastCalledNumberItem = styled(Stack)({
-    width: '60px',
-    height: '60px',
-    borderRadius: '50%',
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: '0 10px',
-    background: 'linear-gradient(to bottom right, #cecece, #fff)', // Grey color
-
-
-
-});
-const audioFiles = [
-    b1Sound, b2Sound, b3Sound, b4Sound, b5Sound, b6Sound, b7Sound, b8Sound, b9Sound, b10Sound,
-    b11Sound, b12Sound, b13Sound, b14Sound, b15Sound, b16Sound, b17Sound, b18Sound, b19Sound, b20Sound,
-    b21Sound, b22Sound, b23Sound, b24Sound, b25Sound, b26Sound, b27Sound, b28Sound, b29Sound, b30Sound,
-    b31Sound, b32Sound, b33Sound, b34Sound, b35Sound, b36Sound, b37Sound, b38Sound, b39Sound, b40Sound,
-    b41Sound, b42Sound, b43Sound, b44Sound, b45Sound, b46Sound, b47Sound, b48Sound, b49Sound, b50Sound,
-    b51Sound, b52Sound, b53Sound, b54Sound, b55Sound, b56Sound, b57Sound, b58Sound, b59Sound, b60Sound,
-    b61Sound, b62Sound, b63Sound, b64Sound, b65Sound, b66Sound, b67Sound, b68Sound, b69Sound, b70Sound, b71Sound, b72Sound,
-    b73Sound, b74Sound, b75Sound, stopBingo, shuf, bingo
-];
-
-const howls = audioFiles.map(sound => new Howl({
-    src: [sound]
-}));
-
-// Variable to keep track of the currently playing sound
-let currentPlayingSound = null;
 
 // Function to play audio by index
 
@@ -302,14 +129,6 @@ const BingoNumbersContainer = styled(Stack)
   width: 92%;
 `;
 
-const BingoRow = styled(Stack)
-`
-  display: grid;
-  grid-template-columns: repeat(15, 1fr);
-  gap: 0.5vw; // Adjusted gap for responsiveness
-  width: 100%;
-  justify-items: center;
-`;
 
 const StyledButton = styled(Button)(({
     theme,
@@ -503,11 +322,9 @@ const LastCalledNumber = ({
 }) => {
     useEffect(() => {
         if (number !== null) {
-            const index = number - 1; {
-                gameStarted ? handlePlayAudio(75) : handlePlayAudio(number)
-            } // Play the corresponding audio
+            handlePlayAudio(gameStarted ? 75 : number)
         }
-    }, [number]);
+    }, [number, gameStarted]);
 
     function getLetter(number) {
         if (number >= 1 && number <= 15) {
@@ -589,13 +406,11 @@ const LastCalledNumber = ({
 export default function Home() {
 
     const navigate = useNavigate();
-    const [age, setAge] = React.useState(10);
-    const [isMale, setIsMale] = React.useState('false')
-    const [voice, setVoice] = React.useState('MALE');
-    const [languageCode, setLanguageCode] = React.useState('am-ET');
+    const isMale = 'false';
+    const voice = 'MALE';
+    const languageCode = 'am-ET';
     const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [currentGameDocRef, setCurrentGameDocRef] = useState(null);
     const {
         t
     } = useTranslation();
@@ -612,7 +427,7 @@ export default function Home() {
             const userDoc = await getDoc(userDocRef);
             const userData = userDoc.exists() ? userDoc.data() : null;
             console.log(`userData:${userData?.adminId}`);
-            if (userData ?.adminId) {
+            if (userData?.adminId) {
                 // Use the adminID as the document ID
                 const superAgentDocRef = doc(db, 'users', userData.adminId);
                 const superAgentDoc = await getDoc(superAgentDocRef);
@@ -626,45 +441,9 @@ export default function Home() {
 
         fetchSuperAgent();
     }, [uid]);
-    const handleOpenHistoryDialog = () => {
-        setOpenHistoryDialog(true);
-    };
     const handleCloseHistoryDialog = () => {
         setOpenHistoryDialog(false);
 
-    };
-    const handleChange = (event) => {
-        const selectedValue = event.target.value;
-        setAge(selectedValue);
-
-        // Check if the selected value is "Male-Amharic"
-        if (selectedValue === 10) {
-            // Save the gender in local storage
-            setLanguageCode('am-ET')
-            setIsMale('True')
-            setVoice('MALE')
-        } else if (selectedValue === 20) {
-            // Clear the gender from local storage if not male
-            setIsMale('False')
-
-            setLanguageCode('am-ET')
-
-            setVoice('FEMALE')
-        } else if (selectedValue === 30) {
-            // Clear the gender from local storage if not male
-            setIsMale('False')
-
-            setLanguageCode('en-US')
-
-            setVoice('MALE')
-        } else if (selectedValue === 40) {
-            // Clear the gender from local storage if not male
-            setIsMale('False')
-
-            setLanguageCode('en-US')
-
-            setVoice('FEMALE')
-        }
     };
 
     const [gradientColor, setGradientColor] = useState('');
@@ -677,11 +456,7 @@ export default function Home() {
         setGradientColor(randomGradient);
     };
     const [isGameStarted, setIsGameStarted] = useState(JSON.parse(localStorage.getItem('isGameStarted')) || false);
-    const [gender, setGender] = useState('MALE');
 
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const clickedNumbersString = queryParams.get('numbers');
     const {
         betAmount
     } = useParams();
@@ -699,8 +474,6 @@ export default function Home() {
         };
         return storedCalledNumbers;
     });
-    const [intervalId, setIntervalId] = React.useState(null);
-
     const [lastCalledNumber, setLastCalledNumber] = React.useState(null);
     const [lastThreeCalledNumbers, setLastThreeCalledNumbers] = React.useState([]);
     const [lastCalledNumbers, setLastCalledNumbers] = React.useState([]);
@@ -710,9 +483,6 @@ export default function Home() {
             setCalledNumbers(storedCalledNumbers);
         }
     }, []);
-    const [userPhone, setUserPhone] = useState('');
-    const [verificationCode, setVerificationCode] = useState('');
-    const [actualCode, setActualCode] = useState(null);
     const [isPhoneVerificationDialogOpen, setPhoneVerificationDialogOpen] =
     useState(false);
     // Save calledNumbers and isGameStarted to localStorage whenever they change
@@ -724,11 +494,6 @@ export default function Home() {
         generateRandomGradient();
     }, [lastCalledNumber]);
 
-    const toggleShuffle = () => {
-        playAudio(76)
-        setIsShuffling(true);
-        setTimeout(() => setIsShuffling(false), 3000); // Shuffles colors for 3 seconds
-    };
     // In your Home component or wherever you handle fullscreen mode
     const handleFullscreen = () => {
         // Toggle fullscreen mode
@@ -773,7 +538,7 @@ export default function Home() {
     const callNumber = React.useCallback(async () => {
         const availableNumbers = allNumbers.filter(number => {
             const category = number <= 15 ? 'b' : number <= 30 ? 'i' : number <= 45 ? 'n' : number <= 60 ? 'g' : 'o';
-            return !calledNumbers[category] ?.includes(number);
+            return !calledNumbers[category]?.includes(number);
         });
         if (availableNumbers.length > 0) {
             const randomIndex = Math.floor(Math.random() * availableNumbers.length);
@@ -786,7 +551,7 @@ export default function Home() {
             setLastCalledNumber(randomNumber);
 
             setLastThreeCalledNumbers(prevCalledNumbers => {
-                const updatedNumbers = [randomNumber, ...prevCalledNumbers ?.slice(0, 4)];
+                const updatedNumbers = [randomNumber, ...prevCalledNumbers?.slice(0, 4)];
                 return updatedNumbers;
             });
             setLastCalledNumbers(prevCalledNumbers => {
@@ -794,20 +559,8 @@ export default function Home() {
                 return updatedNumbers;
             });
             // synthesizeSpeech(randomNumber.toString()); // Assuming randomNumber is the called number
-            // Save the called number to the Firebase document in real-time
-
-            if (currentGameDocRef) {
-                try {
-                    await updateDoc(currentGameDocRef, {
-                        lastCalledNumbers: arrayUnion(randomNumber)
-                    });
-                    console.log("Number saved:", randomNumber);
-                } catch (error) {
-                    console.error("Error saving called number:", error);
-                }
-            }
         }
-    }, [allNumbers, calledNumbers, currentGameDocRef]);
+    }, [allNumbers, calledNumbers]);
 
 
 
@@ -815,15 +568,15 @@ export default function Home() {
 
     const [gameStarted, setGameStarted] = React.useState(false);
 
-    const requestRef = useRef(null); // Reference for requestAnimationFrame
-    const lastCallTimeRef = useRef(0); // Time tracking for interval
+    const requestRef = React.useRef(null);
+    const lastCallTimeRef = React.useRef(0);
 
     const handleAutoCall = () => {
         setAutoCall(prev => !prev);
         if (!autoCall) setIsGameStarted(true);
         if (autoCall) setIsGameStarted(false)
     };
-    const animate = useCallback((timestamp) => {
+    const animate = React.useCallback((timestamp) => {
         if (!lastCallTimeRef.current) {
             lastCallTimeRef.current = timestamp;
         }
@@ -878,50 +631,13 @@ export default function Home() {
         setGameStarted(false)
 
     };
-    const [isShuffling, setIsShuffling] = useState(false);
     const [isToggled, setIsToggled] = useState(false);
-    const [isBlink, setIsBlinking] = useState(false);
-    const [timeLeft, setTimeLeft] = React.useState('');
-    React.useEffect(() => {
-        const calculateTimeLeft = () => {
-            const now = new Date();
-            let nextFiveAM = new Date(now);
-            nextFiveAM.setHours(5, 0, 0, 0);
-
-            if (now >= nextFiveAM) {
-                nextFiveAM.setDate(nextFiveAM.getDate() + 1);
-            }
-
-            const diff = nextFiveAM - now;
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((diff / (1000 * 60)) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
-
-            setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-        };
-
-        calculateTimeLeft();
-        const timer = setInterval(calculateTimeLeft, 1000);
-
-        return () => clearInterval(timer);
-    }, [])
     const toggleColors = async () => {
         playAudio(76)
         let toggle = true;
 
         for (let i = 0; i < 10; i++) {
             setIsToggled(toggle);
-            toggle = !toggle;
-            await new Promise(resolve => setTimeout(resolve, 200));
-        }
-        setIsToggled(false);
-    };
-    const Blink = async () => {
-
-        let toggle = true;
-
-        for (let i = 0; i < 10; i++) {
-            setIsBlinking(toggle);
             toggle = !toggle;
             await new Promise(resolve => setTimeout(resolve, 200));
         }
@@ -1012,10 +728,6 @@ export default function Home() {
         }));
     };
     const inputNumbers = localStorage.getItem('clickedNumbers')
-    const selectedCartelas = localStorage.getItem('selectedCartelas');
-    let selectedCard = {};
-    let selectedCards = [];
-
     const cleanedInputNumbers = inputNumbers.slice(1, -1).split(',').map(Number);
 
     const filteredCards = React.useMemo(() => {
@@ -1024,15 +736,7 @@ export default function Home() {
             const cardNumber = Number(card.cardname.replace('card', ''));
             return cleanedInputNumbers.includes(cardNumber);
         });
-    }, [inputNumbers]);
-
-
-
-
-
-    const calledNumbersCount = Object.values(calledNumbers).reduce((acc, category) => {
-        return acc + category.length;
-    }, 0);
+    }, [cleanedInputNumbers]);
 
     const unlockAllNumbers = () => {
         // Logic to unlock all locked numbers
@@ -1531,7 +1235,7 @@ export default function Home() {
         div style = {
             containerStyle
         } > {
-            lastCalledNumbers ?.map((number, index) => ( <
+            lastCalledNumbers?.map((number, index) => ( <
                 div key = {
                     index
                 }
@@ -1675,7 +1379,7 @@ export default function Home() {
         div style = {
             containerStyle
         } > {
-            lastCalledNumbers ?.map((number, index) => ( <
+            lastCalledNumbers?.map((number, index) => ( <
                 div key = {
                     index
                 }

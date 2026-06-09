@@ -21,7 +21,6 @@ import {
 } from 'react-toastify';
 import Switch from '@mui/material/Switch';
 import useTranslation from './useTranslation';
-import logo from './kkk.jpg'
 import VegasWheel from './bingo1';
 import BoorioPoker from './bingo2';
 import {
@@ -29,12 +28,7 @@ import {
     doc,
     getDoc
 } from 'firebase/firestore';
-import {
-    db
-} from '../firebase';
-import UpdatePassword from './updatePass';
 export default function NumberGenerator() {
-    const [generatedNumbers, setGeneratedNumbers] = useState([]);
     const [checked, setChecked] = React.useState(false);
     const {
         t
@@ -117,9 +111,6 @@ export default function NumberGenerator() {
             localStorage.setItem('clickedNumbers', JSON.stringify(clickedNumbers));
             localStorage.setItem('selectedCartelas', clickedNumbers.length);
             clearGameStorage();
-            setGeneratedNumbers(Array.from({
-                length: 100
-            }, (_, index) => index + 1));
             navigate(`/home/${betAmount * clickedNumbers.length}`);
         } else {
             alert('Please select at least one number and insert the bet amount.');
@@ -127,8 +118,6 @@ export default function NumberGenerator() {
     };
 
     const handleContinue = () => {
-        const uid = localStorage.getItem('uid');
-
         // Ensure settings are loaded before validation
         if (minBetAmount === null || minPlayers === null) {
             toast.error('Game settings are not loaded. Please try again later.');
@@ -147,9 +136,6 @@ export default function NumberGenerator() {
             localStorage.setItem('betAmount', betAmount);
             localStorage.setItem('clickedNumbers', JSON.stringify(clickedNumbers));
             localStorage.setItem('selectedCartelas', clickedNumbers.length);
-            setGeneratedNumbers(Array.from({
-                length: 100
-            }, (_, index) => index + 1));
             navigate(`/home/${betAmount * clickedNumbers.length}`);
         } else {
             alert('Please select at least one number and insert the bet amount.');
@@ -189,11 +175,6 @@ export default function NumberGenerator() {
         setClickedNumbers(updatedClickedNumbers);
         localStorage.setItem('clickedNumbers', JSON.stringify(updatedClickedNumbers));
     };
-
-
-    const numbers = Array.from({
-        length: 432
-    }, (_, index) => index + 1);
 
     return ( <
         div className = "dark-theme-bg"

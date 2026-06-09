@@ -1,7 +1,4 @@
-import {
-    Howl,
-    Howler
-} from 'howler';
+import { Howl } from 'howler';
 import b1Sound from '../assets/bingosound/b1.mp3';
 
 import b2Sound from '../assets/bingosound/b2.mp3';

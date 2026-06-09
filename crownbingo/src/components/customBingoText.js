@@ -4,9 +4,6 @@ import Typography from '@mui/material/Typography';
 import {
     styled
 } from '@mui/material/styles';
-import {
-    Box
-} from '@mui/material';
 import '../pages/NumberGenerator.css'; // Import CSS for additional styles
 
 // StyledButton component with gradient background and border

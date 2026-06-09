@@ -15,7 +15,7 @@ const TextToSpeech = ({ text, lang = 'en', rate = 1, pitch = 1, volume = 1, auto
 
     React.useEffect(() => {
         if (autoSpeak && text) speak();
-    }, [text, autoSpeak]);
+    }, [text, autoSpeak, speak]);
 
     return children ? React.cloneElement(children, { onClick: speak }) : null;
 };

@@ -32,8 +32,6 @@ import TemporaryDrawer from '../components/drawer';
 import {
     getFirestore,
     collection,
-    query,
-    where,
     getDocs,
     updateDoc,
     doc
@@ -127,12 +125,12 @@ export default function Dboard() {
         todayEnd.setDate(todayEnd.getDate() + 1);
 
         const todayIncomeTotal = gameHistories
-            .filter((history) => history.date ?.seconds >= todayStart.getTime() / 1000 && history.date ?.seconds < todayEnd.getTime() / 1000)
+            .filter((history) => history.date.seconds >= todayStart.getTime() / 1000 && history.date.seconds < todayEnd.getTime() / 1000)
             .reduce((acc, curr) => acc + ((curr.betAmount * curr.cahser_percent / 100)), 0);
         setTodayIncome(todayIncomeTotal);
     }, [gameHistories]);
     const uniqueGameHistories = gameHistories.filter(
-        (history, index, self) => index === self.findIndex(h => h.date ?.seconds === history.date ?.seconds && h.betAmount === history.betAmount)
+        (history, index, self) => index === self.findIndex(h => h.date.seconds === history.date.seconds && h.betAmount === history.betAmount)
     );
 
     const handleStartDateChange = (newDate) => {
@@ -144,7 +142,7 @@ export default function Dboard() {
     };
 
     const filteredGameHistories = uniqueGameHistories.filter((history) => {
-        const historyDateSeconds = history.date ?.seconds;
+        const historyDateSeconds = history.date?.seconds;
         const startSeconds = startDate.unix();
         const endSeconds = endDate.unix();
         return historyDateSeconds >= startSeconds && historyDateSeconds <= endSeconds;

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
@@ -20,7 +19,6 @@ import {
 } from 'react-router-dom';
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth';
 import GiftIcon from '@mui/icons-material/CardGiftcard';
-import LanguageSelector from '../pages/LanguageSelector';
 import {
     getAuth,
     signOut
@@ -44,9 +42,6 @@ export default function TemporaryDrawer() {
     const toggleDrawer = (newOpen) => () => {
         setOpen(newOpen);
     };
-
-    const betAmount = localStorage.getItem('betAmount');
-    const clickedNumber = localStorage.getItem('clickedNumbers');
 
     const handleItemClick = async (text) => {
         if (text === 'Logout') {

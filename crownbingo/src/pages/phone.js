@@ -27,7 +27,6 @@ const PhoneVerificationDialog = ({
     onClose,
     uid
 }) => {
-    const [initialPhone, setInitialPhone] = useState('');
     const [phone, setPhone] = useState('');
     const [otpCode, setOtpCode] = useState('');
     const [actualCode, setActualCode] = useState(null);
@@ -46,7 +45,6 @@ const PhoneVerificationDialog = ({
                     if (userDoc.exists()) {
                         const userData = userDoc.data();
                         const fetchedPhone = userData.phone || '';
-                        setInitialPhone(fetchedPhone);
                         setPhone((prevPhone) => prevPhone || fetchedPhone);
                     } else {
                         toast.error('User not found.');
