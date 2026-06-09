@@ -22,7 +22,9 @@ const storage = getStorage(app);
 let analytics = null;
 try { analytics = getAnalytics(app); } catch (e) { /* analytics unavailable */ }
 
+const firebaseConfigForExport = firebaseConfig;
+
 export {
-  auth, db, storage, analytics,
+  auth, db, storage, analytics, firebaseConfigForExport as firebaseConfig,
   onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword
 };

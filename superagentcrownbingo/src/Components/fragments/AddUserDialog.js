@@ -43,6 +43,15 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+let _tempAuth = null;
+function getTempAuth() {
+  if (!_tempAuth) {
+    const tempApp = initializeApp(firebaseConfig, 'temp-agent-user');
+    _tempAuth = getAuth(tempApp);
+  }
+  return _tempAuth;
+}
+
 export default function AddDialog({
     open,
     handleClose,
@@ -67,7 +76,8 @@ export default function AddDialog({
 
         try {
             // Register the user with Firebase Authentication
-            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const tempAuth = getTempAuth();
+            const userCredential = await createUserWithEmailAndPassword(tempAuth, formData.email, formData.password);
             const user = userCredential.user;
             let adminId = localStorage.getItem('uid');
             console.log(localStorage.getItem('gametype'));

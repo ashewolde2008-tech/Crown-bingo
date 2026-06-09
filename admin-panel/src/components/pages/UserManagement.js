@@ -34,7 +34,18 @@ import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { db, auth, createUserWithEmailAndPassword } from '../../firebase';
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db, firebaseConfig } from '../../firebase';
+
+let _tempAuth = null;
+function getTempAuth() {
+  if (!_tempAuth) {
+    const tempApp = initializeApp(firebaseConfig, 'temp-admin');
+    _tempAuth = getAuth(tempApp);
+  }
+  return _tempAuth;
+}
 
 const getValidationSchema = (isEditing) => yup.object({
     username: yup.string('Enter username').required('Username is required'),
@@ -69,7 +80,8 @@ export default function UserManagement() {
                     await updateDoc(doc(db, 'users', editingUser.id), updateData);
                     toast.success('User updated successfully');
                 } else {
-                    const userCred = await createUserWithEmailAndPassword(auth, values.email, values.password);
+                    const tempAuth = getTempAuth();
+                    const userCred = await createUserWithEmailAndPassword(tempAuth, values.email, values.password);
                     const uid = userCred.user.uid;
                     const userData = {
                         uid,

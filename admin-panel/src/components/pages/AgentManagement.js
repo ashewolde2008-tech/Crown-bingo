@@ -32,10 +32,22 @@ import {
     Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc, increment } from 'firebase/firestore';
-import { db, auth, createUserWithEmailAndPassword } from '../../firebase';
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db, firebaseConfig } from '../../firebase';
+
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+
+let _tempAuth = null;
+function getTempAuth() {
+  if (!_tempAuth) {
+    const tempApp = initializeApp(firebaseConfig, 'temp-admin');
+    _tempAuth = getAuth(tempApp);
+  }
+  return _tempAuth;
+}
 
 const getValidationSchema = (isEditing) => yup.object({
     agentName: yup.string('Enter agent name').required('Agent name is required'),
@@ -117,7 +129,8 @@ export default function AgentManagement() {
                     toast.success('Agent updated successfully');
                 } else {
                     const { password } = values;
-                    const userCred = await createUserWithEmailAndPassword(auth, values.email, password);
+                    const tempAuth = getTempAuth();
+                    const userCred = await createUserWithEmailAndPassword(tempAuth, values.email, password);
                     const uid = userCred.user.uid;
                     const agentData = {
                         uid,
