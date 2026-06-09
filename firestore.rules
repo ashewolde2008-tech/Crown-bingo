@@ -5,14 +5,24 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function getUserDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
     function isAdmin() {
-      return isAuth() && request.auth.token.role == 'SUPER_ADMIN';
+      return isAuth() && (
+        request.auth.token.role == 'SUPER_ADMIN' ||
+        (getUserDoc(request.auth.uid).data != null &&
+         getUserDoc(request.auth.uid).data.role == 'SUPER_ADMIN')
+      );
     }
 
     function isAgent() {
       return isAuth() && (
         request.auth.token.role == 'super_agent' ||
-        request.auth.token.role == 'SUPER_AGENT'
+        request.auth.token.role == 'SUPER_AGENT' ||
+        (getUserDoc(request.auth.uid).data != null &&
+         getUserDoc(request.auth.uid).data.userRole == 'superAgent')
       );
     }
 
@@ -20,17 +30,22 @@ service cloud.firestore {
       return isAuth() && uid == request.auth.uid;
     }
 
+    function fieldExists(field) {
+      return field in resource.data;
+    }
+
+    function fieldUnchanged(field) {
+      return !fieldExists(field) || request.resource.data[field] == resource.data[field];
+    }
+
     // ─── Identity & access ────────────────────────────────────────────
     match /users/{userId} {
       allow read: if isOwner(userId) || isAgent() || isAdmin();
-      allow create: if isAdmin();
+      allow create: if isOwner(userId) || isAgent() || isAdmin();
       allow update: if
-        (isOwner(userId) &&
-         request.resource.data.balance == resource.data.balance &&
-         request.resource.data.userRole == resource.data.userRole) ||
-        (isAgent() &&
-         request.resource.data.userRole == resource.data.userRole) ||
-        isAdmin();
+        isAdmin() ||
+        (isAgent() && fieldUnchanged("userRole")) ||
+        (isOwner(userId) && fieldUnchanged("balance") && fieldUnchanged("userRole"));
       allow delete: if false;
 
       match /histories/{historyId} {
