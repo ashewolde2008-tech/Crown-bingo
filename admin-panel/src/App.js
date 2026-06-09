@@ -11,6 +11,7 @@ import AdminLayout from './components/layouts/AdminLayout';
 import AdminDashboard from './components/pages/Dashboard';
 import UserManagement from './components/pages/UserManagement';
 import AgentManagement from './components/pages/AgentManagement';
+import BetsManagement from './components/pages/BetsManagement';
 import SettingsPage from './components/pages/Settings';
 import AdminLogin from './components/pages/AdminLogin';
 import AuditLogView from './components/pages/AuditLogView';
@@ -96,6 +97,7 @@ function App() {
                                         <Route path="/users" element={<UserManagement />} />
                                         <Route path="/agents" element={<AgentManagement />} />
                                         <Route path="/settings" element={<SettingsPage />} />
+                                        <Route path="/bets" element={<BetsManagement />} />
                                         <Route path="/audit-log" element={<AuditLogView />} />
                                     </Routes>
                                 </AdminLayout>

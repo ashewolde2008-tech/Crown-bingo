@@ -25,6 +25,7 @@ import {
     Logout as LogoutIcon,
     SmartToy as AgentIcon,
     Receipt as ReceiptIcon,
+    MonetizationOn as BetsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
@@ -65,6 +66,7 @@ export default function AdminLayout({ children }) {
         { label: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
         { label: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
         { label: 'Agents', icon: <AgentIcon />, path: '/admin/agents' },
+        { label: 'Bets', icon: <BetsIcon />, path: '/admin/bets' },
         { label: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
         { label: 'Audit Log', icon: <ReceiptIcon />, path: '/admin/audit-log' },
     ];
