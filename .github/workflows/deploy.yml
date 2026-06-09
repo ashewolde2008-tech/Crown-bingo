@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     strategy:
+      fail-fast: false
       matrix:
         app:
           - name: crown-bingo
@@ -58,6 +59,8 @@ jobs:
         working-directory: ${{ matrix.app.dir }}
       - run: npm run build
         working-directory: ${{ matrix.app.dir }}
+        env:
+          CI: false
       - name: Deploy to Cloudflare Pages
         run: |
           npx wrangler pages deploy build \
