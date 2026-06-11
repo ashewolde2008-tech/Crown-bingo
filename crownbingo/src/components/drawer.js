@@ -207,7 +207,7 @@ export default function TemporaryDrawer() {
         div >
         <
         IconButton onClick = {
-            toggleDrawer(true)
+            toggleDrawer(false)
         } >
         <
         MenuIcon sx = {
@@ -223,7 +223,7 @@ export default function TemporaryDrawer() {
             open
         }
         onClose = {
-            toggleDrawer(false)
+            toggleDrawer(true)
         } > {
             DrawerList
         } <

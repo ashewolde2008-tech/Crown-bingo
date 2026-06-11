@@ -1078,8 +1078,7 @@ export default function Home() {
                 () => {
                     playAudio(75);
                     setGameStarted(true);
-                    clearInterval(intervalId); // Clear the interval
-                    setAutoCall(false); // Set autoCall state to false
+                    setAutoCall(false);
                 }
             }
             sx = {
