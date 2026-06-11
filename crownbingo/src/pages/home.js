@@ -1076,7 +1076,7 @@ export default function Home() {
             < Button variant = "contained"
             onClick = {
                 () => {
-                    playAudio(75);
+                    playAudio(stopBingo);
                     setGameStarted(true);
                     setAutoCall(false);
                 }
