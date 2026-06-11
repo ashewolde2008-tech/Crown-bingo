@@ -1077,7 +1077,6 @@ export default function Home() {
             onClick = {
                 () => {
                     playAudio(stopBingo);
-                    setGameStarted(true);
                     setAutoCall(false);
                 }
             }
