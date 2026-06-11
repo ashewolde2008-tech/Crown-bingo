@@ -102,6 +102,11 @@ const playAudio = (index) => {
         sounds[currentPlayingIndex].stop(); // Stop the current sound if any
     }
 
+    // If a file reference (string/URL from import) is passed, resolve to numeric index
+    if (typeof index === 'string') {
+        index = audioFiles.indexOf(index);
+    }
+
     if (index >= 0 && index < sounds.length) {
         sounds[index].play();
         currentPlayingIndex = index;
